@@ -7,31 +7,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     <style>
         :root {
-            --bg-0: #05070d;
-            --bg-1: #0b0e17;
-            --bg-2: #121624;
-            --bg-3: #1a1f30;
-            --border: rgba(255,255,255,.06);
-            --border-strong: rgba(255,255,255,.12);
-            --text: #e8ecf4;
-            --text-dim: #8b93a7;
-            --text-muted: #5b6478;
-            --accent: #f97316;
-            --accent-2: #fb923c;
-            --temp-max: #ff6b35;
-            --temp-mean: #fbbf24;
-            --temp-min: #38bdf8;
-            --rain: #3b82f6;
-            --rain-light: #60a5fa;
-            --hum: #10b981;
-            --hum-light: #34d399;
-            --danger: #f43f5e;
-            --success: #22c55e;
-            --radius: 16px;
-            --radius-sm: 10px;
+            --bg-0: #05070d; --bg-1: #0b0e17; --bg-2: #121624; --bg-3: #1a1f30;
+            --border: rgba(255,255,255,.06); --border-strong: rgba(255,255,255,.12);
+            --text: #e8ecf4; --text-dim: #8b93a7; --text-muted: #5b6478;
+            --accent: #f97316; --temp-max: #ff6b35; --temp-mean: #fbbf24; --temp-min: #38bdf8;
+            --rain: #3b82f6; --hum: #10b981; --success: #22c55e;
+            --radius: 16px; --radius-sm: 10px;
             --shadow: 0 10px 40px -10px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.3);
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
         body {
@@ -41,16 +24,12 @@
                 radial-gradient(1000px 500px at 100% 0%, rgba(59,130,246,.07), transparent 60%),
                 radial-gradient(800px 400px at 50% 100%, rgba(16,185,129,.05), transparent 60%),
                 var(--bg-0);
-            color: var(--text);
-            min-height: 100vh;
-            line-height: 1.55;
+            color: var(--text); min-height: 100vh; line-height: 1.55;
             -webkit-font-smoothing: antialiased;
         }
-
         header {
             position: sticky; top: 0; z-index: 100;
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             background: rgba(5,7,13,.75);
             border-bottom: 1px solid var(--border);
         }
@@ -64,19 +43,16 @@
         .brand-icon {
             width: 44px; height: 44px; border-radius: 12px;
             background: linear-gradient(135deg, var(--accent), #ea580c);
-            display: grid; place-items: center;
-            font-size: 1.4rem;
+            display: grid; place-items: center; font-size: 1.4rem;
             box-shadow: 0 4px 20px rgba(249,115,22,.35);
         }
         .brand-text h1 {
             font-size: 1.15rem; font-weight: 700;
-            letter-spacing: -.02em;
             background: linear-gradient(135deg, #fff 0%, #9ca3af 100%);
             -webkit-background-clip: text; background-clip: text;
             -webkit-text-fill-color: transparent;
         }
         .brand-text p { font-size: .78rem; color: var(--text-muted); margin-top: 2px; }
-
         .header-right { display: flex; align-items: center; gap: 1rem; }
         .live-badge {
             display: inline-flex; align-items: center; gap: .45rem;
@@ -86,9 +62,7 @@
             color: var(--success); font-size: .75rem; font-weight: 600;
         }
         .live-dot {
-            width: 7px; height: 7px; border-radius: 50%;
-            background: var(--success);
-            box-shadow: 0 0 0 0 rgba(34,197,94,.6);
+            width: 7px; height: 7px; border-radius: 50%; background: var(--success);
             animation: pulse 2s infinite;
         }
         @keyframes pulse {
@@ -97,7 +71,6 @@
             100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
         }
         .clock { font-size: .85rem; color: var(--text-dim); font-variant-numeric: tabular-nums; }
-
         .controls {
             max-width: 1500px; margin: 0 auto;
             padding: 1.25rem 2rem;
@@ -115,11 +88,9 @@
             border-radius: var(--radius-sm);
             padding: .6rem 1rem; font-size: .88rem;
             font-family: inherit; cursor: pointer;
-            transition: all .2s ease;
-            min-width: 120px;
+            transition: all .2s ease; min-width: 120px;
         }
         .ctrl-group select:hover { border-color: var(--accent); background: var(--bg-3); }
-        .ctrl-group select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(249,115,22,.15); }
         .btn-primary {
             background: linear-gradient(135deg, var(--accent), #ea580c) !important;
             border-color: transparent !important;
@@ -128,12 +99,10 @@
         }
         .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(249,115,22,.4); }
         .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-
         #status {
             max-width: 1500px; margin: 0 auto;
-            padding: .6rem 2rem;
-            font-size: .82rem; color: var(--text-dim);
-            min-height: 2rem;
+            padding: .6rem 2rem; font-size: .82rem;
+            color: var(--text-dim); min-height: 2rem;
         }
         #status .spinner {
             display: inline-block; width: 12px; height: 12px;
@@ -142,60 +111,37 @@
             vertical-align: middle; margin-right: .5rem;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-
         main { max-width: 1500px; margin: 0 auto; padding: 1rem 2rem 4rem; }
-
-        .section {
-            margin-top: 2.5rem;
-            animation: fadeUp .6s ease both;
-        }
+        .section { margin-top: 2.5rem; animation: fadeUp .6s ease both; }
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
         .section-head {
             display: flex; align-items: center; gap: .75rem;
-            margin-bottom: 1.25rem;
-            padding-bottom: .75rem;
+            margin-bottom: 1.25rem; padding-bottom: .75rem;
             border-bottom: 1px solid var(--border);
         }
         .section-icon {
             width: 36px; height: 36px; border-radius: 10px;
-            display: grid; place-items: center;
-            font-size: 1.15rem;
+            display: grid; place-items: center; font-size: 1.15rem;
             background: var(--bg-2); border: 1px solid var(--border-strong);
         }
-        .section-head h2 {
-            font-size: 1.15rem; font-weight: 600;
-            letter-spacing: -.01em;
-        }
-        .section-head .subtitle {
-            font-size: .8rem; color: var(--text-muted);
-            margin-left: auto;
-        }
-
+        .section-head h2 { font-size: 1.15rem; font-weight: 600; }
+        .section-head .subtitle { font-size: .8rem; color: var(--text-muted); margin-left: auto; }
         .chart-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
             gap: 1.25rem;
         }
-
         .card {
             background: linear-gradient(180deg, var(--bg-2) 0%, var(--bg-1) 100%);
             border: 1px solid var(--border);
             border-radius: var(--radius);
             padding: 1.25rem;
             box-shadow: var(--shadow);
-            position: relative;
-            overflow: hidden;
-            transition: border-color .3s, transform .3s;
+            position: relative; overflow: hidden;
         }
-        .card::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
-        }
-        .card:hover { border-color: var(--border-strong); }
         .card h3 {
             font-size: .78rem; font-weight: 600;
             text-transform: uppercase; letter-spacing: .08em;
@@ -206,80 +152,45 @@
             font-size: .65rem; padding: .15rem .45rem;
             background: var(--bg-3); border-radius: 4px;
             color: var(--text-muted); text-transform: none;
-            letter-spacing: 0;
         }
         .card canvas { width: 100% !important; }
-
         .forecast-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.25rem;
+            gap: 1rem; margin-bottom: 1.25rem;
         }
         .forecast-day {
             background: var(--bg-2);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
-            padding: 1rem;
-            text-align: center;
+            padding: 1rem; text-align: center;
             transition: all .25s;
         }
-        .forecast-day:hover {
-            border-color: var(--accent);
-            transform: translateY(-2px);
-            background: var(--bg-3);
-        }
-        .forecast-day .day-name {
-            font-size: .75rem; color: var(--text-muted);
-            text-transform: uppercase; letter-spacing: .08em;
-        }
-        .forecast-day .day-date {
-            font-size: 1.1rem; font-weight: 600; margin: .25rem 0 .5rem;
-        }
+        .forecast-day:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .forecast-day .day-name { font-size: .75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; }
+        .forecast-day .day-date { font-size: 1.1rem; font-weight: 600; margin: .25rem 0 .5rem; }
         .forecast-day .day-icon { font-size: 1.8rem; margin: .3rem 0; }
-        .forecast-day .day-temps {
-            display: flex; justify-content: center; gap: .75rem;
-            font-size: .85rem; margin-top: .5rem;
-        }
+        .forecast-day .day-temps { display: flex; justify-content: center; gap: .75rem; font-size: .85rem; margin-top: .5rem; }
         .forecast-day .tmax { color: var(--temp-max); font-weight: 600; }
         .forecast-day .tmin { color: var(--temp-min); }
-        .forecast-day .day-rain {
-            font-size: .75rem; color: var(--rain-light);
-            margin-top: .35rem;
-        }
-        .forecast-day .day-hum {
-            font-size: .75rem; color: var(--hum-light);
-        }
-
+        .forecast-day .day-rain { font-size: .75rem; color: var(--rain); margin-top: .35rem; }
+        .forecast-day .day-hum { font-size: .75rem; color: var(--hum); }
         .info-box {
             background: linear-gradient(135deg, rgba(59,130,246,.05), rgba(16,185,129,.03));
             border: 1px solid rgba(59,130,246,.15);
             border-radius: var(--radius);
-            padding: 1rem 1.25rem;
-            margin-bottom: 1.5rem;
+            padding: 1rem 1.25rem; margin-bottom: 1.5rem;
             font-size: .82rem; color: var(--text-dim);
             line-height: 1.7;
             display: flex; gap: .75rem; align-items: flex-start;
         }
         .info-box .ico { font-size: 1.2rem; flex-shrink: 0; }
         .info-box strong { color: var(--text); }
-        .info-box code {
-            background: var(--bg-3); padding: .15em .4em;
-            border-radius: 4px; font-size: .82em;
-        }
-
+        .info-box code { background: var(--bg-3); padding: .15em .4em; border-radius: 4px; font-size: .82em; }
         @media (max-width: 640px) {
             .header-inner, .controls, main, #status { padding-left: 1rem; padding-right: 1rem; }
             .chart-grid { grid-template-columns: 1fr; }
-            .brand-text h1 { font-size: 1rem; }
-            .section-head { flex-wrap: wrap; }
-            .section-head .subtitle { margin-left: 0; width: 100%; }
         }
-
-        ::-webkit-scrollbar { width: 10px; height: 10px; }
-        ::-webkit-scrollbar-track { background: var(--bg-0); }
-        ::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 5px; }
-        ::-webkit-scrollbar-thumb:hover { background: #2a3142; }
     </style>
 </head>
 <body>
@@ -303,14 +214,7 @@
 <div class="controls">
     <div class="ctrl-group">
         <label for="selMonth">Mese</label>
-        <select id="selMonth">
-            <option value="0">Gennaio</option><option value="1">Febbraio</option>
-            <option value="2">Marzo</option><option value="3">Aprile</option>
-            <option value="4">Maggio</option><option value="5">Giugno</option>
-            <option value="6" selected>Luglio</option><option value="7">Agosto</option>
-            <option value="8">Settembre</option><option value="9">Ottobre</option>
-            <option value="10">Novembre</option><option value="11">Dicembre</option>
-        </select>
+        <select id="selMonth"></select>
     </div>
     <div class="ctrl-group">
         <label for="selYearFrom">Anno da</label>
@@ -326,7 +230,7 @@
     </div>
 </div>
 
-<div id="status">Seleziona i parametri e clicca <strong>Aggiorna tutto</strong>.</div>
+<div id="status">Inizializzazione...</div>
 
 <main>
     <div class="info-box">
@@ -335,6 +239,7 @@
             <strong>Fonte:</strong> Open-Meteo Archive API (ERA5/ECMWF) + Forecast API.
             <strong>Coordinate:</strong> <code>42.1328°N, 12.1056°E</code> — Canale Monterano (RM).
             L'app si aggiorna automaticamente ogni <strong>10 minuti</strong>.
+            <br><strong>Nota:</strong> Il caricamento completo richiede 2-3 minuti per evitare rate limiting.
         </div>
     </div>
 
@@ -382,7 +287,7 @@
         <div class="section-head">
             <div class="section-icon">📈</div>
             <h2>Andamento annuale completo</h2>
-            <span class="subtitle">Serie storica 1965–anno precedente</span>
+            <span class="subtitle" id="yearlyTrendLabel">—</span>
         </div>
         <div class="chart-grid">
             <div class="card"><h3>🌡️ Temperatura media annuale <span class="tag">°C</span></h3><canvas id="chartYearlyTemp"></canvas></div>
@@ -408,377 +313,358 @@
 <script>
 const LAT = 42.1328, LON = 12.1056;
 const START_YEAR = 1965;
-const MONTH_NAMES = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
-                     'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+const MONTH_NAMES = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 const MONTH_SHORT = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 const DAY_NAMES = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
 const AUTO_REFRESH_MS = 10 * 60 * 1000;
+const DAILY_VARS = 'temperature_2m_max,temperature_2m_min,temperature_2m_mean,precipitation_sum';
+const API_DELAY = 5000;
+const CHUNK_YEARS = 5;
 
 Chart.defaults.color = '#8b93a7';
 Chart.defaults.borderColor = 'rgba(255,255,255,.06)';
 Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
-
 const charts = {};
 
-(function init() {
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+function initControls() {
     const now = new Date();
-    document.getElementById('selMonth').value = now.getMonth();
-    const selFrom = document.getElementById('selYearFrom');
-    const selTo = document.getElementById('selYearTo');
-    for (let y = START_YEAR; y <= now.getFullYear(); y++) {
-        selFrom.innerHTML += `<option value="${y}" ${y===START_YEAR?'selected':''}>${y}</option>`;
-        selTo.innerHTML   += `<option value="${y}" ${y===now.getFullYear()?'selected':''}>${y}</option>`;
-    }
-    updateClock();
-    setInterval(updateClock, 1000);
-})();
+    const currentYear = now.getFullYear();
+    const selMonth = document.getElementById('selMonth');
+    selMonth.innerHTML = '';
+    MONTH_NAMES.forEach((name, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx; opt.textContent = name;
+        if (idx === now.getMonth()) opt.selected = true;
+        selMonth.appendChild(opt);
+    });
+    ['selYearFrom','selYearTo'].forEach(id => {
+        const sel = document.getElementById(id);
+        sel.innerHTML = '';
+        for (let y = START_YEAR; y <= currentYear; y++) {
+            const opt = document.createElement('option');
+            opt.value = y; opt.textContent = y;
+            if (id === 'selYearFrom' && y === START_YEAR) opt.selected = true;
+            if (id === 'selYearTo' && y === currentYear) opt.selected = true;
+            sel.appendChild(opt);
+        }
+    });
+    setStatus('Pronto. Clicca <strong>Aggiorna tutto</strong>.');
+}
+document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', initControls) : initControls();
 
 function updateClock() {
     const d = new Date();
     document.getElementById('clock').textContent =
-        d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) +
-        ' · ' + d.toLocaleDateString('it-IT', { day: '2-digit', month: 'short' });
+        d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) +
+        ' · ' + d.toLocaleDateString('it-IT',{day:'2-digit',month:'short'});
 }
+setInterval(updateClock, 1000); updateClock();
 
-function setStatus(msg, loading = false) {
-    document.getElementById('status').innerHTML =
-        (loading ? '<span class="spinner"></span>' : '') + msg;
+// ═══════════════════════════════════════════════════════════
+// UTILITÀ
+// ═══════════════════════════════════════════════════════════
+function setStatus(msg, loading) {
+    document.getElementById('status').innerHTML = (loading ? '<span class="spinner"></span>' : '') + msg;
 }
-function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
-function formatDate(s) { return new Date(s).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }); }
-function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
-function round1(v) { return v == null ? null : Math.round(v * 10) / 10; }
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-function chunk(arr, size) {
-    const out = [];
-    for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
-    return out;
-}
-function avg(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null; }
+function daysInMonth(y,m){return new Date(y,m+1,0).getDate();}
+function formatDate(s){return new Date(s).toLocaleDateString('it-IT',{day:'2-digit',month:'short'});}
+function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+function round1(v){return v==null?null:Math.round(v*10)/10;}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function avg(arr){return arr&&arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:null;}
 
-const DAILY_VARS = 'temperature_2m_max,temperature_2m_min,temperature_2m_mean,precipitation_sum';
-
-async function apiArchiveDaily(start, end) {
-    const r = await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${LAT}&longitude=${LON}&start_date=${start}&end_date=${end}&daily=${DAILY_VARS}&timezone=Europe%2FRome`);
-    if (!r.ok) throw new Error('Archive daily error ' + r.status);
-    return r.json();
-}
-async function apiArchiveHourly(start, end) {
-    const r = await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${LAT}&longitude=${LON}&start_date=${start}&end_date=${end}&hourly=relative_humidity_2m&timezone=Europe%2FRome`);
-    if (!r.ok) throw new Error('Archive hourly error ' + r.status);
-    return r.json();
-}
-async function apiForecast() {
-    const vars = 'temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,relative_humidity_2m_max,relative_humidity_2m_min,weathercode';
-    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&daily=${vars}&hourly=temperature_2m,precipitation_probability,relative_humidity_2m&forecast_days=7&timezone=Europe%2FRome`);
-    if (!r.ok) throw new Error('Forecast error ' + r.status);
-    return r.json();
-}
-
-function aggregateHumidityDaily(hourlyData) {
-    if (!hourlyData?.hourly?.time) return { dates: [], values: [] };
-    const t = hourlyData.hourly.time, v = hourlyData.hourly.relative_humidity_2m;
-    const daily = {};
-    for (let i = 0; i < t.length; i++) {
-        if (v[i] == null) continue;
-        const day = t[i].substring(0, 10);
-        (daily[day] ||= []).push(v[i]);
+// ═══════════════════════════════════════════════════════════
+// API CON RETRY
+// ═══════════════════════════════════════════════════════════
+async function fetchWithRetry(url, retries=5) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const r = await fetch(url);
+            if (r.status === 429) {
+                const w = 10000*(i+1);
+                setStatus(`⏳ Rate limit. Attesa ${w/1000}s (${i+1}/${retries})...`, true);
+                await sleep(w); continue;
+            }
+            if (r.status >= 500) { await sleep(5000*(i+1)); continue; }
+            if (!r.ok) throw new Error('HTTP '+r.status);
+            return await r.json();
+        } catch(e) {
+            if (i===retries-1) throw e;
+            await sleep(5000*(i+1));
+        }
     }
-    const dates = [], values = [];
-    for (const d of Object.keys(daily).sort()) {
-        const a = daily[d];
-        dates.push(d);
-        values.push(round1(avg(a)));
-    }
-    return { dates, values };
+}
+function apiDaily(s,e){return fetchWithRetry(`https://archive-api.open-meteo.com/v1/archive?latitude=${LAT}&longitude=${LON}&start_date=${s}&end_date=${e}&daily=${DAILY_VARS}&timezone=Europe%2FRome`);}
+function apiHourly(s,e){return fetchWithRetry(`https://archive-api.open-meteo.com/v1/archive?latitude=${LAT}&longitude=${LON}&start_date=${s}&end_date=${e}&hourly=relative_humidity_2m&timezone=Europe%2FRome`);}
+function apiForecast(){return fetchWithRetry(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,relative_humidity_2m_max,relative_humidity_2m_min,weathercode&hourly=temperature_2m,precipitation_probability,relative_humidity_2m&forecast_days=7&timezone=Europe%2FRome`);}
+
+function aggregateHumidityDaily(h) {
+    if (!h?.hourly?.time) return {dates:[],values:[]};
+    const t=h.hourly.time, v=h.hourly.relative_humidity_2m, daily={};
+    for(let i=0;i<t.length;i++){if(v[i]==null)continue;const d=t[i].substring(0,10);(daily[d]||(daily[d]=[])).push(v[i]);}
+    const dates=[],values=[];
+    for(const d of Object.keys(daily).sort()){dates.push(d);values.push(round1(avg(daily[d])));}
+    return {dates,values};
 }
 
-function weatherIcon(code) {
-    if (code == null) return '🌡️';
-    if (code === 0) return '☀️';
-    if (code <= 3) return code === 1 ? '🌤️' : code === 2 ? '⛅' : '☁️';
-    if (code <= 49) return '🌫️';
-    if (code <= 59) return '🌦️';
-    if (code <= 69) return '🌧️';
-    if (code <= 79) return '🌨️';
-    if (code <= 82) return '🌧️';
-    if (code <= 86) return '🌨️';
-    if (code >= 95) return '⛈️';
-    return '🌡️';
-}
+function weatherIcon(c){if(c==null)return'🌡️';if(c===0)return'☀️';if(c<=3)return c===1?'🌤️':c===2?'⛅':'☁️';if(c<=49)return'🌫️';if(c<=69)return'🌧️';if(c<=79)return'🌨️';if(c<=86)return'🌧️';if(c>=95)return'⛈️';return'🌡️';}
 
+// ═══════════════════════════════════════════════════════════
+// RENDERING
+// ═══════════════════════════════════════════════════════════
 function renderForecast(data) {
-    const d = data.daily, h = data.hourly;
-    const cards = document.getElementById('forecastCards');
-    cards.innerHTML = '';
-    for (let i = 0; i < d.time.length; i++) {
-        const date = new Date(d.time[i]);
-        const dayName = i === 0 ? 'Oggi' : i === 1 ? 'Domani' : DAY_NAMES[date.getDay()];
-        const dateStr = date.toLocaleDateString('it-IT', { day: '2-digit', month: 'short' });
-        const icon = weatherIcon(d.weathercode[i]);
-        const rain = d.precipitation_sum[i] ?? 0;
-        const humAvg = round1(((d.relative_humidity_2m_max[i] || 0) + (d.relative_humidity_2m_min[i] || 0)) / 2);
-        cards.innerHTML += `
-            <div class="forecast-day">
-                <div class="day-name">${dayName}</div>
-                <div class="day-date">${dateStr}</div>
-                <div class="day-icon">${icon}</div>
-                <div class="day-temps">
-                    <span class="tmax">${Math.round(d.temperature_2m_max[i])}°</span>
-                    <span class="tmin">${Math.round(d.temperature_2m_min[i])}°</span>
-                </div>
-                <div class="day-rain">🌧️ ${round1(rain)} mm</div>
-                <div class="day-hum">💧 ${humAvg}%</div>
-            </div>`;
+    const d=data.daily, h=data.hourly;
+    const cards=document.getElementById('forecastCards'); cards.innerHTML='';
+    for(let i=0;i<d.time.length;i++){
+        const date=new Date(d.time[i]);
+        const dn=i===0?'Oggi':i===1?'Domani':DAY_NAMES[date.getDay()];
+        const ds=date.toLocaleDateString('it-IT',{day:'2-digit',month:'short'});
+        const hum=round1(((d.relative_humidity_2m_max[i]||0)+(d.relative_humidity_2m_min[i]||0))/2);
+        cards.innerHTML+=`<div class="forecast-day"><div class="day-name">${dn}</div><div class="day-date">${ds}</div><div class="day-icon">${weatherIcon(d.weathercode[i])}</div><div class="day-temps"><span class="tmax">${Math.round(d.temperature_2m_max[i])}°</span><span class="tmin">${Math.round(d.temperature_2m_min[i])}°</span></div><div class="day-rain">🌧️ ${round1(d.precipitation_sum[i]??0)} mm</div><div class="day-hum">💧 ${hum}%</div></div>`;
     }
+    const hLabels=h.time.map(t=>new Date(t).toLocaleString('it-IT',{day:'2-digit',month:'short',hour:'2-digit'}));
+    const gradOrange=(ctx)=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,300);g.addColorStop(0,'rgba(249,115,22,.35)');g.addColorStop(1,'rgba(249,115,22,0)');return g;};
+    const gradGreen=(ctx)=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,300);g.addColorStop(0,'rgba(16,185,129,.3)');g.addColorStop(1,'rgba(16,185,129,0)');return g;};
 
     destroyChart('chartFcTemp');
-    charts['chartFcTemp'] = new Chart(document.getElementById('chartFcTemp'), {
-        type: 'line',
-        data: {
-            labels: h.time.map(t => new Date(t).toLocaleString('it-IT', { day:'2-digit', month:'short', hour:'2-digit' })),
-            datasets: [{
-                label: 'Temperatura °C', data: h.temperature_2m,
-                borderColor: '#f97316',
-                backgroundColor: (ctx) => {
-                    const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
-                    g.addColorStop(0, 'rgba(249,115,22,.35)');
-                    g.addColorStop(1, 'rgba(249,115,22,0)');
-                    return g;
-                },
-                fill: true, tension: .35, pointRadius: 0, borderWidth: 2
-            }]
-        },
-        options: chartOpts('Temperatura oraria — 7 giorni', '°C', true)
-    });
+    charts['chartFcTemp']=new Chart(document.getElementById('chartFcTemp'),{type:'line',data:{labels:hLabels,datasets:[{label:'Temperatura °C',data:h.temperature_2m,borderColor:'#f97316',backgroundColor:gradOrange,fill:true,tension:.35,pointRadius:0,borderWidth:2}]},options:chartOpts('Temperatura oraria — 7 giorni','°C',true)});
 
     destroyChart('chartFcRain');
-    charts['chartFcRain'] = new Chart(document.getElementById('chartFcRain'), {
-        type: 'bar',
-        data: {
-            labels: d.time.map(formatDate),
-            datasets: [
-                {
-                    type: 'bar', label: 'Precipitazioni mm',
-                    data: d.precipitation_sum,
-                    backgroundColor: 'rgba(59,130,246,.55)',
-                    borderColor: '#3b82f6', borderWidth: 1, borderRadius: 4,
-                    yAxisID: 'y'
-                },
-                {
-                    type: 'line', label: 'Probabilità %',
-                    data: d.precipitation_probability_max,
-                    borderColor: '#60a5fa', backgroundColor: 'transparent',
-                    tension: .3, pointRadius: 3, borderWidth: 2,
-                    yAxisID: 'y1'
-                }
-            ]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: true, aspectRatio: 1.8,
-            interaction: { mode: 'index', intersect: false },
-            plugins: {
-                legend: { labels: { usePointStyle: true, pointStyle: 'circle', padding: 12, font: { size: 11 } } },
-                tooltip: { backgroundColor: '#121624', borderColor: '#2a3142', borderWidth: 1, padding: 10, cornerRadius: 8 }
-            },
-            scales: {
-                x: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { font: { size: 10 } } },
-                y: { position: 'left', title: { display: true, text: 'mm', color: '#8b93a7', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,.05)' }, min: 0 },
-                y1: { position: 'right', title: { display: true, text: '%', color: '#8b93a7', font: { size: 11 } }, grid: { drawOnChartArea: false }, min: 0, max: 100 }
-            }
-        }
-    });
+    charts['chartFcRain']=new Chart(document.getElementById('chartFcRain'),{type:'bar',data:{labels:d.time.map(formatDate),datasets:[{type:'bar',label:'mm',data:d.precipitation_sum,backgroundColor:'rgba(59,130,246,.55)',borderColor:'#3b82f6',borderWidth:1,borderRadius:4,yAxisID:'y'},{type:'line',label:'Prob %',data:d.precipitation_probability_max,borderColor:'#60a5fa',backgroundColor:'transparent',tension:.3,pointRadius:3,borderWidth:2,yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:true,aspectRatio:1.8,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{usePointStyle:true,pointStyle:'circle',padding:12}}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'}},y:{position:'left',title:{display:true,text:'mm'},grid:{color:'rgba(255,255,255,.05)'},min:0},y1:{position:'right',title:{display:true,text:'%'},grid:{drawOnChartArea:false},min:0,max:100}}}});
 
     destroyChart('chartFcHum');
-    charts['chartFcHum'] = new Chart(document.getElementById('chartFcHum'), {
-        type: 'line',
-        data: {
-            labels: h.time.map(t => new Date(t).toLocaleString('it-IT', { day:'2-digit', month:'short', hour:'2-digit' })),
-            datasets: [{
-                label: 'Umidità %', data: h.relative_humidity_2m,
-                borderColor: '#10b981',
-                backgroundColor: (ctx) => {
-                    const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
-                    g.addColorStop(0, 'rgba(16,185,129,.3)');
-                    g.addColorStop(1, 'rgba(16,185,129,0)');
-                    return g;
-                },
-                fill: true, tension: .35, pointRadius: 0, borderWidth: 2
-            }]
-        },
-        options: chartOpts('Umidità oraria — 7 giorni', '%', false, 0, 100)
-    });
+    charts['chartFcHum']=new Chart(document.getElementById('chartFcHum'),{type:'line',data:{labels:hLabels,datasets:[{label:'Umidità %',data:h.relative_humidity_2m,borderColor:'#10b981',backgroundColor:gradGreen,fill:true,tension:.35,pointRadius:0,borderWidth:2}]},options:chartOpts('Umidità oraria — 7 giorni','%',false,0,100)});
 }
 
-function renderCurrentMonth(tempData, humData, month, year) {
-    document.getElementById('currentMonthLabel').textContent =
-        `${MONTH_NAMES[month]} ${year}`;
-    const labels = tempData.dates.map(formatDate);
-
+function renderCurrentMonth(td,hd,month,year) {
+    document.getElementById('currentMonthLabel').textContent=`${MONTH_NAMES[month]} ${year}`;
+    const labels=td.dates.map(formatDate);
     destroyChart('chartCurrentTemp');
-    charts['chartCurrentTemp'] = new Chart(document.getElementById('chartCurrentTemp'), {
-        type: 'line',
-        data: {
-            labels,
-            datasets: [
-                { label: 'Max', data: tempData.tmax, borderColor: '#ff6b35', backgroundColor: 'rgba(255,107,53,.1)', fill: false, tension: .3, pointRadius: 3, borderWidth: 2 },
-                { label: 'Media', data: tempData.tmean, borderColor: '#fbbf24', fill: false, tension: .3, pointRadius: 2, borderWidth: 2 },
-                { label: 'Min', data: tempData.tmin, borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,.1)', fill: false, tension: .3, pointRadius: 3, borderWidth: 2 },
-            ]
-        },
-        options: chartOpts(`Temperatura — ${MONTH_NAMES[month]} ${year}`, '°C')
-    });
+    charts['chartCurrentTemp']=new Chart(document.getElementById('chartCurrentTemp'),{type:'line',data:{labels,datasets:[{label:'Max',data:td.tmax,borderColor:'#ff6b35',fill:false,tension:.3,pointRadius:3,borderWidth:2},{label:'Media',data:td.tmean,borderColor:'#fbbf24',fill:false,tension:.3,pointRadius:2,borderWidth:2},{label:'Min',data:td.tmin,borderColor:'#38bdf8',fill:false,tension:.3,pointRadius:3,borderWidth:2}]},options:chartOpts(`Temperatura — ${MONTH_NAMES[month]} ${year}`,'°C')});
 
     destroyChart('chartCurrentRain');
-    charts['chartCurrentRain'] = new Chart(document.getElementById('chartCurrentRain'), {
-        type: 'bar',
-        data: {
-            labels,
-            datasets: [{
-                label: 'mm', data: tempData.rain,
-                backgroundColor: (ctx) => {
-                    const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
-                    g.addColorStop(0, 'rgba(59,130,246,.8)');
-                    g.addColorStop(1, 'rgba(59,130,246,.3)');
-                    return g;
-                },
-                borderColor: '#3b82f6', borderWidth: 1, borderRadius: 4
-            }]
-        },
-        options: chartOpts(`Precipitazioni — ${MONTH_NAMES[month]} ${year}`, 'mm')
-    });
+    charts['chartCurrentRain']=new Chart(document.getElementById('chartCurrentRain'),{type:'bar',data:{labels,datasets:[{label:'mm',data:td.rain,backgroundColor:'rgba(59,130,246,.6)',borderColor:'#3b82f6',borderWidth:1,borderRadius:4}]},options:chartOpts(`Precipitazioni — ${MONTH_NAMES[month]} ${year}`,'mm')});
 
     destroyChart('chartCurrentHum');
-    charts['chartCurrentHum'] = new Chart(document.getElementById('chartCurrentHum'), {
-        type: 'line',
-        data: {
-            labels: humData.dates.map(formatDate),
-            datasets: [{
-                label: 'Umidità %', data: humData.values,
-                borderColor: '#10b981',
-                backgroundColor: (ctx) => {
-                    const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
-                    g.addColorStop(0, 'rgba(16,185,129,.35)');
-                    g.addColorStop(1, 'rgba(16,185,129,0)');
-                    return g;
-                },
-                fill: true, tension: .3, pointRadius: 2, borderWidth: 2
-            }]
-        },
-        options: chartOpts(`Umidità — ${MONTH_NAMES[month]} ${year}`, '%', false, 0, 100)
-    });
+    charts['chartCurrentHum']=new Chart(document.getElementById('chartCurrentHum'),{type:'line',data:{labels:hd.dates.map(formatDate),datasets:[{label:'Umidità %',data:hd.values,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.2)',fill:true,tension:.3,pointRadius:2,borderWidth:2}]},options:chartOpts(`Umidità — ${MONTH_NAMES[month]} ${year}`,'%',false,0,100)});
 }
 
-function renderMonthlyProfile(monthlyData) {
-    const labels = MONTH_SHORT;
-
+function renderMonthlyProfile(md) {
     destroyChart('chartMonthlyTemp');
-    charts['chartMonthlyTemp'] = new Chart(document.getElementById('chartMonthlyTemp'), {
-        type: 'line',
-        data: {
-            labels,
-            datasets: [
-                { label: 'Max', data: monthlyData.map(d => d.tmax), borderColor: '#ff6b35', backgroundColor: 'rgba(255,107,53,.15)', fill: '+1', tension: .4, pointRadius: 4, pointBackgroundColor: '#ff6b35', borderWidth: 2 },
-                { label: 'Media', data: monthlyData.map(d => d.tmean), borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,.1)', fill: false, tension: .4, pointRadius: 4, pointBackgroundColor: '#fbbf24', borderWidth: 2 },
-                { label: 'Min', data: monthlyData.map(d => d.tmin), borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,.15)', fill: '-1', tension: .4, pointRadius: 4, pointBackgroundColor: '#38bdf8', borderWidth: 2 },
-            ]
-        },
-        options: chartOpts('Profilo mensile medio — Temperatura', '°C')
-    });
+    charts['chartMonthlyTemp']=new Chart(document.getElementById('chartMonthlyTemp'),{type:'line',data:{labels:MONTH_SHORT,datasets:[{label:'Max',data:md.map(d=>d.tmax),borderColor:'#ff6b35',backgroundColor:'rgba(255,107,53,.15)',fill:'+1',tension:.4,pointRadius:4,borderWidth:2},{label:'Media',data:md.map(d=>d.tmean),borderColor:'#fbbf24',fill:false,tension:.4,pointRadius:4,borderWidth:2},{label:'Min',data:md.map(d=>d.tmin),borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,.15)',fill:'-1',tension:.4,pointRadius:4,borderWidth:2}]},options:chartOpts('Profilo mensile medio — Temperatura','°C')});
 
     destroyChart('chartMonthlyRain');
-    charts['chartMonthlyRain'] = new Chart(document.getElementById('chartMonthlyRain'), {
-        type: 'bar',
-        data: {
-            labels,
-            datasets: [{
-                label: 'mm totali', data: monthlyData.map(d => d.rain),
-                backgroundColor: (ctx) => {
-                    const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
-                    g.addColorStop(0, 'rgba(59,130,246,.85)');
-                    g.addColorStop(1, 'rgba(59,130,246,.25)');
-                    return g;
-                },
-                borderColor: '#3b82f6', borderWidth: 1, borderRadius: 6
-            }]
-        },
-        options: chartOpts('Profilo mensile medio — Precipitazioni', 'mm')
-    });
+    charts['chartMonthlyRain']=new Chart(document.getElementById('chartMonthlyRain'),{type:'bar',data:{labels:MONTH_SHORT,datasets:[{label:'mm totali',data:md.map(d=>d.rain),backgroundColor:'rgba(59,130,246,.6)',borderColor:'#3b82f6',borderWidth:1,borderRadius:6}]},options:chartOpts('Profilo mensile medio — Precipitazioni','mm')});
 
     destroyChart('chartMonthlyHum');
-    charts['chartMonthlyHum'] = new Chart(document.getElementById('chartMonthlyHum'), {
-        type: 'line',
-        data: {
-            labels,
-            datasets: [{
-                label: 'Umidità media %', data: monthlyData.map(d => d.hum),
-                borderColor: '#10b981',
-                backgroundColor: (ctx) => {
-                    const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
-                    g.addColorStop(0, 'rgba(16,185,129,.35)');
-                    g.addColorStop(1, 'rgba(16,185,129,0)');
-                    return g;
-                },
-                fill: true, tension: .4, pointRadius: 5, pointBackgroundColor: '#10b981', borderWidth: 2.5
-            }]
-        },
-        options: chartOpts('Profilo mensile medio — Umidità', '%', false, 0, 100)
-    });
+    charts['chartMonthlyHum']=new Chart(document.getElementById('chartMonthlyHum'),{type:'line',data:{labels:MONTH_SHORT,datasets:[{label:'Umidità %',data:md.map(d=>d.hum),borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.2)',fill:true,tension:.4,pointRadius:5,borderWidth:2.5}]},options:chartOpts('Profilo mensile medio — Umidità','%',false,0,100)});
 }
 
-function renderYearlyTrend(yearlyData) {
+function renderYearlyTrend(yd) {
+    if(!yd.length){document.getElementById('yearlyTrendLabel').textContent='Nessun dato';return;}
+    document.getElementById('yearlyTrendLabel').textContent=`${yd.length} anni · ${yd[0].year}–${yd[yd.length-1].year}`;
+
     destroyChart('chartYearlyTemp');
-    charts['chartYearlyTemp'] = new Chart(document.getElementById('chartYearlyTemp'), {
-        type: 'line',
-        data: {
-            labels: yearlyData.map(d => d.year),
-            datasets: [
-                { label: 'Max media', data: yearlyData.map(d => d.tmax), borderColor: '#ff6b35', tension: .3, pointRadius: 1.5, borderWidth: 1.8 },
-                { label: 'Media', data: yearlyData.map(d => d.tmean), borderColor: '#fbbf24', tension: .3, pointRadius: 1.5, borderWidth: 2 },
-                { label: 'Min media', data: yearlyData.map(d => d.tmin), borderColor: '#38bdf8', tension: .3, pointRadius: 1.5, borderWidth: 1.8 },
-            ]
-        },
-        options: chartOpts('Andamento annuale — Temperatura (1965–oggi)', '°C')
-    });
+    charts['chartYearlyTemp']=new Chart(document.getElementById('chartYearlyTemp'),{type:'line',data:{labels:yd.map(d=>d.year),datasets:[{label:'Max media',data:yd.map(d=>d.tmax),borderColor:'#ff6b35',tension:.3,pointRadius:2,borderWidth:1.8},{label:'Media',data:yd.map(d=>d.tmean),borderColor:'#fbbf24',tension:.3,pointRadius:2,borderWidth:2.5},{label:'Min media',data:yd.map(d=>d.tmin),borderColor:'#38bdf8',tension:.3,pointRadius:2,borderWidth:1.8}]},options:chartOpts('Andamento annuale — Temperatura','°C')});
 
     destroyChart('chartYearlyRain');
-    charts['chartYearlyRain'] = new Chart(document.getElementById('chartYearlyRain'), {
-        type: 'bar',
-        data: {
-            labels: yearlyData.map(d => d.year),
-            datasets: [{
-                label: 'mm totali', data: yearlyData.map(d => d.rain),
-                backgroundColor: 'rgba(59,130,246,.55)',
-                borderColor: '#3b82f6', borderWidth: 1, borderRadius: 2
-            }]
-        },
-        options: chartOpts('Andamento annuale — Precipitazioni', 'mm')
-    });
+    charts['chartYearlyRain']=new Chart(document.getElementById('chartYearlyRain'),{type:'bar',data:{labels:yd.map(d=>d.year),datasets:[{label:'mm totali',data:yd.map(d=>d.rain),backgroundColor:'rgba(59,130,246,.55)',borderColor:'#3b82f6',borderWidth:1,borderRadius:2}]},options:chartOpts('Andamento annuale — Precipitazioni','mm')});
 
     destroyChart('chartYearlyHum');
-    charts['chartYearlyHum'] = new Chart(document.getElementById('chartYearlyHum'), {
-        type: 'line',
-        data: {
-            labels: yearlyData.map(d => d.year),
-            datasets: [{
-                label: 'Umidità media %', data: yearlyData.map(d => d.hum),
-                borderColor: '#10b981',
-                backgroundColor: (ctx) => {
-                    const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
-                    g.addColorStop(0, 'rgba(16,185,129,.25)');
-                    g.addColorStop(1, 'rgba(16,185,129,0)');
-                    return g;
-                },
-                fill: true, tension: .3, pointRadius: 1.5, borderWidth: 2
-            }]
-        },
-        options: chartOpts('Andamento annuale — Umidità', '%', false, 0, 100)
-    });
+    charts['chartYearlyHum']=new Chart(document.getElementById('chartYearlyHum'),{type:'line',data:{labels:yd.map(d=>d.year),datasets:[{label:'Umidità %',data:yd.map(d=>d.hum),borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.2)',fill:true,tension:.3,pointRadius:2,borderWidth:2}]},options:chartOpts('Andamento annuale — Umidità','%',false,0,100)});
 }
 
-function renderMonthTrend(monthTrendData, month) {
-    const monthName = MONTH_NAMES[month];
-    document.getElementById('monthTrendTitle').textContent =
-        `Andamento di ${monthName} negli anni`;
-    document.getElementById('monthTrendLabel').textContent =
-        `${monthTrendData.length} anni · dal ${monthTrendData[0]?.year} al ${monthT
+function renderMonthTrend(td,month) {
+    const mn=MONTH_NAMES[month];
+    document.getElementById('monthTrendTitle').textContent=`Andamento di ${mn} negli anni`;
+    if(!td.length){document.getElementById('monthTrendLabel').textContent='Nessun dato';return;}
+    document.getElementById('monthTrendLabel').textContent=`${td.length} anni · ${td[0].year}–${td[td.length-1].year}`;
+    const years=td.map(d=>d.year);
+
+    destroyChart('chartMonthTrendTemp');
+    charts['chartMonthTrendTemp']=new Chart(document.getElementById('chartMonthTrendTemp'),{type:'line',data:{labels:years,datasets:[{label:'Max media',data:td.map(d=>d.tmax),borderColor:'#ff6b35',backgroundColor:'rgba(255,107,53,.08)',fill:'+1',tension:.3,pointRadius:3,borderWidth:2},{label:'Media',data:td.map(d=>d.tmean),borderColor:'#fbbf24',fill:false,tension:.3,pointRadius:3,borderWidth:2.5},{label:'Min media',data:td.map(d=>d.tmin),borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,.08)',fill:'-1',tension:.3,pointRadius:3,borderWidth:2},{label:'Tendenza',data:linearRegression(td.map(d=>d.tmean)),borderColor:'rgba(251,191,36,.4)',borderDash:[6,4],borderWidth:1.5,pointRadius:0,fill:false}]},options:chartOpts(`${mn} — Temperatura negli anni`,'°C')});
+
+    destroyChart('chartMonthTrendRain');
+    charts['chartMonthTrendRain']=new Chart(document.getElementById('chartMonthTrendRain'),{type:'bar',data:{labels:years,datasets:[{label:`${mn} (mm)`,data:td.map(d=>d.rain),backgroundColor:'rgba(59,130,246,.6)',borderColor:'#3b82f6',borderWidth:1,borderRadius:4},{type:'line',label:'Tendenza',data:linearRegression(td.map(d=>d.rain)),borderColor:'rgba(96,165,250,.7)',borderDash:[6,4],borderWidth:1.8,pointRadius:0,fill:false}]},options:chartOpts(`${mn} — Precipitazioni negli anni`,'mm')});
+
+    destroyChart('chartMonthTrendHum');
+    charts['chartMonthTrendHum']=new Chart(document.getElementById('chartMonthTrendHum'),{type:'line',data:{labels:years,datasets:[{label:`Umidità ${mn}`,data:td.map(d=>d.hum),borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.2)',fill:true,tension:.3,pointRadius:3,borderWidth:2.5},{label:'Tendenza',data:linearRegression(td.map(d=>d.hum)),borderColor:'rgba(52,211,153,.5)',borderDash:[6,4],borderWidth:1.5,pointRadius:0,fill:false}]},options:chartOpts(`${mn} — Umidità negli anni`,'%',false,0,100)});
+}
+
+function linearRegression(values) {
+    if(values.length<2)return values.slice();
+    const vp=values.map((v,i)=>v!=null?[i,v]:null).filter(Boolean);
+    if(vp.length<2)return values.slice();
+    const sx=vp.reduce((a,p)=>a+p[0],0),sy=vp.reduce((a,p)=>a+p[1],0);
+    const sxy=vp.reduce((a,p)=>a+p[0]*p[1],0),sx2=vp.reduce((a,p)=>a+p[0]*p[0],0);
+    const m=(vp.length*sxy-sx*sy)/(vp.length*sx2-sx*sx),q=(sy-m*sx)/vp.length;
+    return values.map((_,i)=>round1(m*i+q));
+}
+
+function chartOpts(title,yLabel,hideX,yMin,yMax) {
+    return {responsive:true,maintainAspectRatio:true,aspectRatio:1.8,interaction:{mode:'index',intersect:false},
+        plugins:{title:{display:true,text:title,color:'#e8ecf4',font:{size:13,weight:'600'},padding:{bottom:12},align:'start'},
+            legend:{labels:{usePointStyle:true,pointStyle:'circle',padding:14,font:{size:11}}},
+            tooltip:{backgroundColor:'rgba(11,14,23,.95)',titleColor:'#e8ecf4',bodyColor:'#8b93a7',borderColor:'#2a3142',borderWidth:1,padding:12,cornerRadius:10}},
+        scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{maxTicksLimit:hideX?7:15,font:{size:10}}},
+            y:{grid:{color:'rgba(255,255,255,.05)'},title:{display:true,text:yLabel},min:yMin,max:yMax,ticks:{font:{size:10}}}}};
+}
+
+// ═══════════════════════════════════════════════════════════
+// CARICAMENTO PRINCIPALE
+// ═══════════════════════════════════════════════════════════
+async function loadAll() {
+    const btn=document.getElementById('btnLoad'); btn.disabled=true;
+    const month=parseInt(document.getElementById('selMonth').value);
+    const yearFrom=parseInt(document.getElementById('selYearFrom').value);
+    const yearTo=parseInt(document.getElementById('selYearTo').value);
+    const now=new Date(), curYear=now.getFullYear(), curMonth=now.getMonth(), curDay=now.getDate();
+
+    try {
+        await sleep(2000);
+
+        // 1) PREVISIONI
+        setStatus('📡 [1/5] Previsioni 7 giorni...',true);
+        renderForecast(await apiForecast());
+        await sleep(API_DELAY);
+
+        // 2) MESE CORRENTE
+        setStatus(`📡 [2/5] ${MONTH_NAMES[month]} ${yearTo}...`,true);
+        let curTemp,curHum;
+        if(yearTo===curYear && month===curMonth){
+            const data=await fetchWithRetry(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&past_days=${curDay+5}&forecast_days=1&daily=${DAILY_VARS}&hourly=relative_humidity_2m&timezone=Europe%2FRome`);
+            curTemp=filterMonth(data.daily,curYear,month);
+            curHum=filterHumMonth(aggregateHumidityDaily({hourly:data.hourly}),curYear,month);
+        } else {
+            const s=`${yearTo}-${String(month+1).padStart(2,'0')}-01`, e=`${yearTo}-${String(month+1).padStart(2,'0')}-${String(daysInMonth(yearTo,month)).padStart(2,'0')}`;
+            const dR=await apiDaily(s,e); await sleep(API_DELAY); const hR=await apiHourly(s,e);
+            curTemp={dates:dR.daily.time,tmax:dR.daily.temperature_2m_max,tmin:dR.daily.temperature_2m_min,tmean:dR.daily.temperature_2m_mean,rain:dR.daily.precipitation_sum};
+            curHum=aggregateHumidityDaily(hR);
+        }
+        renderCurrentMonth(curTemp,curHum,month,yearTo);
+        await sleep(API_DELAY);
+
+        // 3) TEMPERATURE STORICHE A CHUNK
+        const maxYear=Math.min(yearTo,curYear-1);
+        const allT={time:[],tmax:[],tmin:[],tmean:[],rain:[]};
+        for(let y=yearFrom;y<=maxYear;y+=CHUNK_YEARS){
+            const ce=Math.min(y+CHUNK_YEARS-1,maxYear);
+            setStatus(`📡 [3/5] Temp ${y}–${ce}...`,true);
+            try{
+                const r=await apiDaily(`${y}-01-01`,`${ce}-12-31`);
+                if(r.daily?.time){allT.time.push(...r.daily.time);allT.tmax.push(...r.daily.temperature_2m_max);allT.tmin.push(...r.daily.temperature_2m_min);allT.tmean.push(...r.daily.temperature_2m_mean);allT.rain.push(...r.daily.precipitation_sum);}
+                console.log(`✅ Temp ${y}-${ce}: ${r.daily?.time?.length||0} giorni`);
+            }catch(e){console.warn(`⚠️ Temp ${y}-${ce}:`,e);}
+            await sleep(API_DELAY);
+        }
+        console.log(`📊 Totale giorni temperatura: ${allT.time.length}`);
+
+        // 4) UMIDITÀ STORICA A CHUNK
+        const allH={time:[],val:[]};
+        for(let y=yearFrom;y<=maxYear;y+=CHUNK_YEARS){
+            const ce=Math.min(y+CHUNK_YEARS-1,maxYear);
+            setStatus(`📡 [4/5] Umidità ${y}–${ce}...`,true);
+            try{
+                const r=await apiHourly(`${y}-01-01`,`${ce}-12-31`);
+                if(r.hourly?.time){allH.time.push(...r.hourly.time);allH.val.push(...r.hourly.relative_humidity_2m);}
+                console.log(`✅ Umidità ${y}-${ce}: ${r.hourly?.time?.length||0} ore`);
+            }catch(e){console.warn(`⚠️ Umidità ${y}-${ce}:`,e);}
+            await sleep(API_DELAY);
+        }
+        console.log(`📊 Totale ore umidità: ${allH.time.length}`);
+
+        // 5) AGGREGAZIONE EFFICIENTE
+        setStatus('🔧 [5/5] Elaborazione...',true);
+
+        const ymData={};
+        for(let y=yearFrom;y<=maxYear;y++) for(let m=1;m<=12;m++) ymData[`${y}-${String(m).padStart(2,'0')}`]={tmax:[],tmin:[],tmean:[],rain:[]};
+
+        for(let i=0;i<allT.time.length;i++){
+            const key=allT.time[i].substring(0,7);
+            const ym=ymData[key]; if(!ym) continue;
+            if(allT.tmax[i]!=null) ym.tmax.push(allT.tmax[i]);
+            if(allT.tmin[i]!=null) ym.tmin.push(allT.tmin[i]);
+            if(allT.tmean[i]!=null) ym.tmean.push(allT.tmean[i]);
+            if(allT.rain[i]!=null) ym.rain.push(allT.rain[i]);
+        }
+
+        const humDaily={};
+        for(let i=0;i<allH.time.length;i++){
+            if(allH.val[i]==null) continue;
+            const day=allH.time[i].substring(0,10);
+            (humDaily[day]||(humDaily[day]=[])).push(allH.val[i]);
+        }
+        const ymHum={};
+        for(let y=yearFrom;y<=maxYear;y++) for(let m=1;m<=12;m++) ymHum[`${y}-${String(m).padStart(2,'0')}`]=[];
+        for(const day of Object.keys(humDaily).sort()){
+            const key=day.substring(0,7);
+            if(ymHum[key]) ymHum[key].push(round1(avg(humDaily[day])));
+        }
+
+        const monthlyAgg=Array.from({length:12},()=>({tmax:[],tmin:[],tmean:[],rain:[],hum:[]}));
+        const yearlyRows=[];
+        const monthTrendRows=[];
+
+        for(let y=yearFrom;y<=maxYear;y++){
+            let yTmax=[],yTmin=[],yTmean=[],yRain=[],yHum=[];
+            let selTmax=[],selTmin=[],selTmean=[],selRain=[],selHum=[];
+
+            for(let m=1;m<=12;m++){
+                const key=`${y}-${String(m).padStart(2,'0')}`;
+                const ym=ymData[key];
+                const mh=ymHum[key]||[];
+
+                if(ym.tmean.length){
+                    const am=avg(ym.tmax),an=avg(ym.tmin),ae=avg(ym.tmean);
+                    monthlyAgg[m-1].tmax.push(am); monthlyAgg[m-1].tmin.push(an); monthlyAgg[m-1].tmean.push(ae);
+                    yTmax.push(am); yTmin.push(an); yTmean.push(ae);
+                }
+                if(ym.rain.length){
+                    const tr=ym.rain.reduce((a,b)=>a+b,0);
+                    monthlyAgg[m-1].rain.push(tr);
+                    yRain.push(tr);
+                }
+                if(mh.length){
+                    monthlyAgg[m-1].hum.push(avg(mh));
+                    yHum.push(avg(mh));
+                }
+                if(m-1===month){
+                    selTmax.push(...ym.tmax); selTmin.push(...ym.tmin); selTmean.push(...ym.tmean);
+                    selRain.push(...ym.rain); selHum.push(...mh);
+                }
+            }
+
+            yearlyRows.push({year:y,tmax:round1(avg(yTmax)),tmin:round1(avg(yTmin)),tmean:round1(avg(yTmean)),rain:yRain.length?round1(yRain.reduce((a,b)=>a+b,0)):null,hum:round1(avg(yHum))});
+            monthTrendRows.push({year:y,tmax:selTmax.length?round1(avg(selTmax)):null,tmin:selTmin.length?round1(avg(selTmin)):null,tmean:selTmean.length?round1(avg(selTmean)):null,rain:selRain.length?round1(selRain.reduce((a,b)=>a+b,0)):null,hum:selHum.length?round1(avg(selHum)):null});
+        }
+
+        renderMonthlyProfile(monthlyAgg.map(m=>({tmax:round1(avg(m.tmax)),tmin:round1(avg(m.tmin)),tmean:round1(avg(m.tmean)),rain:m.rain.length?round1(avg(m.rain)):null,hum:round1(avg(m.hum))})));
+        renderYearlyTrend(yearlyRows);
+        renderMonthTrend(monthTrendRows,month);
+
+        setStatus(`✅ ${yearlyRows.length} anni caricati (${yearFrom}–${maxYear}) · Aggiornamento ogni 10 min`,false);
+
+    } catch(err) {
+        console.error('❌',err);
+        setStatus(`❌ Errore: ${err.message}`,false);
+    } finally { btn.disabled=false; }
+}
+
+function filterMonth(daily,year,month){
+    const p=`${year}-${String(month+1).padStart(2,'0')}`;
+    const idx=daily.time.reduce((a,d,i)=>{if(d.startsWith(p))a.push(i);return a;},[]);
+    return{dates:idx.map(i=>daily.time[i]),tmax:idx.map(i=>daily.temperature_2m_max[i]),tmin:idx.map(i=>daily.temperature_2m_min[i]),tmean:idx.map(i=>daily.temperature_2m_mean[i]),rain:idx.map(i=>daily.precipitation_sum[i])};
+}
+function filterHumMonth(ha,year,month){
+    const p=`${year}-${String(month+1).padStart(2,'0')}`;
+    const d=[],v=[];for(let i=0;i<ha.dates.length;i++){if(ha.dates[i].startsWith(p)){d.push(ha.dates[i]);v.push(ha.values[i]);}}return{dates:d,values:v};
+}
+
+setInterval(()=>{console.log('[auto-refresh]');loadAll();},AUTO_REFRESH_MS);
+</script>
+
+</body>
+</html>
