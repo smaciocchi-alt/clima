@@ -169,7 +169,7 @@
         .forecast-day:hover { border-color: var(--accent); transform: translateY(-2px); }
         .forecast-day .day-name { font-size: .75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; }
         .forecast-day .day-date { font-size: 1.1rem; font-weight: 600; margin: .25rem 0 .5rem; }
-        .forecast-day .day-icon { font-size: 1.8rem; margin: .3rem 0; }
+        .forecast-day .day-icon { margin: .3rem 0; display: flex; justify-content: center; }
         .forecast-day .day-temps { display: flex; justify-content: center; gap: .75rem; font-size: .85rem; margin-top: .5rem; }
         .forecast-day .tmax { color: var(--temp-max); font-weight: 600; }
         .forecast-day .tmin { color: var(--temp-min); }
@@ -234,15 +234,15 @@
 
 <main>
     <div class="info-box">
-        <span class="ico">ℹ️</span>
+        <span class="ico">⚡</span>
         <div>
-            <strong>Fonte:</strong> Open-Meteo Archive API (ERA5/ECMWF) + Forecast API.
-            <strong>Coordinate:</strong> <code>42.1328°N, 12.1056°E</code> — Canale Monterano (RM).
-            L'app si aggiorna automaticamente ogni <strong>10 minuti</strong>.
-            <br><strong>Nota:</strong> Il caricamento completo richiede 2-3 minuti per evitare rate limiting.
+            <strong>Cache Intelligente:</strong> I dati storici vengono scaricati <strong>solo la prima volta</strong> (~1 minuto) e salvati nel browser.
+            Tutti i caricamenti successivi saranno <strong>istantanei</strong> (1-2 secondi).
+            <br><strong>Fonte:</strong> Open-Meteo Archive API (ERA5) · <code>42.1328°N, 12.1056°E</code> · Auto-refresh ogni 10 minuti.
         </div>
     </div>
 
+    <!-- ═══ SEZIONE 1: PREVISIONI ═══ -->
     <div class="section">
         <div class="section-head">
             <div class="section-icon">🔮</div>
@@ -257,6 +257,7 @@
         </div>
     </div>
 
+    <!-- ═══ SEZIONE 2: ANDAMENTO GIORNALIERO ═══ -->
     <div class="section">
         <div class="section-head">
             <div class="section-icon">📅</div>
@@ -270,6 +271,21 @@
         </div>
     </div>
 
+    <!-- ═══ SEZIONE 3: ANDAMENTO DEL MESE NEGLI ANNI (spostata qui) ═══ -->
+    <div class="section">
+        <div class="section-head">
+            <div class="section-icon">📉</div>
+            <h2 id="monthTrendTitle">Andamento del mese selezionato negli anni</h2>
+            <span class="subtitle" id="monthTrendLabel">—</span>
+        </div>
+        <div class="chart-grid">
+            <div class="card"><h3>🌡️ Temperatura del mese <span class="tag">max / media / min per anno</span></h3><canvas id="chartMonthTrendTemp"></canvas></div>
+            <div class="card"><h3>🌧️ Pioggia del mese <span class="tag">mm totali per anno</span></h3><canvas id="chartMonthTrendRain"></canvas></div>
+            <div class="card"><h3>💧 Umidità del mese <span class="tag">media % per anno</span></h3><canvas id="chartMonthTrendHum"></canvas></div>
+        </div>
+    </div>
+
+    <!-- ═══ SEZIONE 4: PROFILO MENSILE MEDIO ═══ -->
     <div class="section">
         <div class="section-head">
             <div class="section-icon">📊</div>
@@ -283,6 +299,7 @@
         </div>
     </div>
 
+    <!-- ═══ SEZIONE 5: ANDAMENTO ANNUALE COMPLETO ═══ -->
     <div class="section">
         <div class="section-head">
             <div class="section-icon">📈</div>
@@ -295,19 +312,6 @@
             <div class="card"><h3>💧 Umidità media annuale <span class="tag">%</span></h3><canvas id="chartYearlyHum"></canvas></div>
         </div>
     </div>
-
-    <div class="section">
-        <div class="section-head">
-            <div class="section-icon">📉</div>
-            <h2 id="monthTrendTitle">Andamento del mese selezionato negli anni</h2>
-            <span class="subtitle" id="monthTrendLabel">—</span>
-        </div>
-        <div class="chart-grid">
-            <div class="card"><h3>🌡️ Temperatura del mese <span class="tag">max / media / min per anno</span></h3><canvas id="chartMonthTrendTemp"></canvas></div>
-            <div class="card"><h3>🌧️ Pioggia del mese <span class="tag">mm totali per anno</span></h3><canvas id="chartMonthTrendRain"></canvas></div>
-            <div class="card"><h3>💧 Umidità del mese <span class="tag">media % per anno</span></h3><canvas id="chartMonthTrendHum"></canvas></div>
-        </div>
-    </div>
 </main>
 
 <script>
@@ -318,17 +322,14 @@ const MONTH_SHORT = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott'
 const DAY_NAMES = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
 const AUTO_REFRESH_MS = 10 * 60 * 1000;
 const DAILY_VARS = 'temperature_2m_max,temperature_2m_min,temperature_2m_mean,precipitation_sum';
-const API_DELAY = 5000;
-const CHUNK_YEARS = 5;
+const CACHE_KEY = 'cm_meteo_cache_v1';
 
 Chart.defaults.color = '#8b93a7';
 Chart.defaults.borderColor = 'rgba(255,255,255,.06)';
 Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
 const charts = {};
 
-// ═══════════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════════
+// ═══ INIT ═══
 function initControls() {
     const now = new Date();
     const currentYear = now.getFullYear();
@@ -363,9 +364,7 @@ function updateClock() {
 }
 setInterval(updateClock, 1000); updateClock();
 
-// ═══════════════════════════════════════════════════════════
-// UTILITÀ
-// ═══════════════════════════════════════════════════════════
+// ═══ UTILITÀ ═══
 function setStatus(msg, loading) {
     document.getElementById('status').innerHTML = (loading ? '<span class="spinner"></span>' : '') + msg;
 }
@@ -376,24 +375,22 @@ function round1(v){return v==null?null:Math.round(v*10)/10;}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 function avg(arr){return arr&&arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:null;}
 
-// ═══════════════════════════════════════════════════════════
-// API CON RETRY
-// ═══════════════════════════════════════════════════════════
+// ═══ API CON RETRY ═══
 async function fetchWithRetry(url, retries=5) {
     for (let i = 0; i < retries; i++) {
         try {
             const r = await fetch(url);
             if (r.status === 429) {
-                const w = 10000*(i+1);
+                const w = 8000*(i+1);
                 setStatus(`⏳ Rate limit. Attesa ${w/1000}s (${i+1}/${retries})...`, true);
                 await sleep(w); continue;
             }
-            if (r.status >= 500) { await sleep(5000*(i+1)); continue; }
+            if (r.status >= 500) { await sleep(4000*(i+1)); continue; }
             if (!r.ok) throw new Error('HTTP '+r.status);
             return await r.json();
         } catch(e) {
             if (i===retries-1) throw e;
-            await sleep(5000*(i+1));
+            await sleep(4000*(i+1));
         }
     }
 }
@@ -410,11 +407,25 @@ function aggregateHumidityDaily(h) {
     return {dates,values};
 }
 
-function weatherIcon(c){if(c==null)return'🌡️';if(c===0)return'☀️';if(c<=3)return c===1?'🌤️':c===2?'⛅':'☁️';if(c<=49)return'🌫️';if(c<=69)return'🌧️';if(c<=79)return'🌨️';if(c<=86)return'🌧️';if(c>=95)return'⛈️';return'🌡️';}
+// ═══ ICONE METEO SVG (nessun quadrato bianco) ═══
+function weatherIcon(code) {
+    const svg = (paths) => `<svg viewBox="0 0 64 64" width="42" height="42" xmlns="http://www.w3.org/2000/svg" style="display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4));">${paths}</svg>`;
+    if (code == null) return svg(`<circle cx="32" cy="32" r="12" fill="#fbbf24"/>`);
+    if (code === 0) return svg(`<circle cx="32" cy="32" r="14" fill="#fbbf24"/><g stroke="#fbbf24" stroke-width="3" stroke-linecap="round"><line x1="32" y1="6" x2="32" y2="12"/><line x1="32" y1="52" x2="32" y2="58"/><line x1="6" y1="32" x2="12" y2="32"/><line x1="52" y1="32" x2="58" y2="32"/><line x1="13" y1="13" x2="17" y2="17"/><line x1="47" y1="47" x2="51" y2="51"/><line x1="13" y1="51" x2="17" y2="47"/><line x1="47" y1="17" x2="51" y2="13"/></g>`);
+    if (code === 1) return svg(`<circle cx="26" cy="26" r="11" fill="#fbbf24"/><ellipse cx="38" cy="38" rx="16" ry="10" fill="#e4e4e7"/><ellipse cx="28" cy="40" rx="10" ry="8" fill="#e4e4e7"/><ellipse cx="48" cy="40" rx="8" ry="7" fill="#e4e4e7"/>`);
+    if (code === 2) return svg(`<circle cx="22" cy="22" r="10" fill="#fbbf24"/><ellipse cx="36" cy="36" rx="18" ry="12" fill="#cbd5e1"/><ellipse cx="24" cy="38" rx="11" ry="9" fill="#cbd5e1"/><ellipse cx="48" cy="38" rx="9" ry="8" fill="#cbd5e1"/>`);
+    if (code === 3) return svg(`<ellipse cx="32" cy="30" rx="20" ry="13" fill="#94a3b8"/><ellipse cx="20" cy="34" rx="12" ry="10" fill="#94a3b8"/><ellipse cx="44" cy="34" rx="11" ry="9" fill="#94a3b8"/><ellipse cx="32" cy="40" rx="18" ry="8" fill="#64748b"/>`);
+    if (code <= 49) return svg(`<line x1="10" y1="22" x2="54" y2="22" stroke="#cbd5e1" stroke-width="4" stroke-linecap="round"/><line x1="14" y1="32" x2="50" y2="32" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/><line x1="10" y1="42" x2="54" y2="42" stroke="#cbd5e1" stroke-width="4" stroke-linecap="round"/>`);
+    if (code <= 59) return svg(`<ellipse cx="32" cy="24" rx="18" ry="11" fill="#94a3b8"/><ellipse cx="22" cy="28" rx="10" ry="8" fill="#94a3b8"/><ellipse cx="42" cy="28" rx="9" ry="7" fill="#94a3b8"/><line x1="22" y1="42" x2="20" y2="50" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/><line x1="32" y1="42" x2="30" y2="50" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/><line x1="42" y1="42" x2="40" y2="50" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>`);
+    if (code <= 69) return svg(`<ellipse cx="32" cy="22" rx="19" ry="12" fill="#64748b"/><ellipse cx="21" cy="26" rx="11" ry="9" fill="#64748b"/><ellipse cx="43" cy="26" rx="10" ry="8" fill="#64748b"/><line x1="18" y1="40" x2="14" y2="54" stroke="#3b82f6" stroke-width="3.5" stroke-linecap="round"/><line x1="32" y1="40" x2="28" y2="54" stroke="#3b82f6" stroke-width="3.5" stroke-linecap="round"/><line x1="46" y1="40" x2="42" y2="54" stroke="#3b82f6" stroke-width="3.5" stroke-linecap="round"/>`);
+    if (code <= 79) return svg(`<ellipse cx="32" cy="22" rx="19" ry="12" fill="#94a3b8"/><ellipse cx="21" cy="26" rx="11" ry="9" fill="#94a3b8"/><ellipse cx="43" cy="26" rx="10" ry="8" fill="#94a3b8"/><circle cx="20" cy="44" r="2.5" fill="#e0f2fe"/><circle cx="32" cy="48" r="2.5" fill="#e0f2fe"/><circle cx="44" cy="44" r="2.5" fill="#e0f2fe"/><circle cx="26" cy="54" r="2.5" fill="#e0f2fe"/><circle cx="38" cy="54" r="2.5" fill="#e0f2fe"/>`);
+    if (code <= 82) return svg(`<ellipse cx="32" cy="20" rx="18" ry="11" fill="#475569"/><ellipse cx="21" cy="24" rx="11" ry="9" fill="#475569"/><ellipse cx="43" cy="24" rx="10" ry="8" fill="#475569"/><line x1="16" y1="38" x2="10" y2="56" stroke="#2563eb" stroke-width="4" stroke-linecap="round"/><line x1="28" y1="38" x2="22" y2="56" stroke="#2563eb" stroke-width="4" stroke-linecap="round"/><line x1="40" y1="38" x2="34" y2="56" stroke="#2563eb" stroke-width="4" stroke-linecap="round"/><line x1="52" y1="38" x2="46" y2="56" stroke="#2563eb" stroke-width="4" stroke-linecap="round"/>`);
+    if (code <= 86) return svg(`<ellipse cx="32" cy="20" rx="18" ry="11" fill="#64748b"/><ellipse cx="21" cy="24" rx="11" ry="9" fill="#64748b"/><ellipse cx="43" cy="24" rx="10" ry="8" fill="#64748b"/><circle cx="18" cy="42" r="3" fill="#e0f2fe"/><circle cx="32" cy="46" r="3" fill="#e0f2fe"/><circle cx="46" cy="42" r="3" fill="#e0f2fe"/><circle cx="24" cy="54" r="3" fill="#e0f2fe"/><circle cx="40" cy="54" r="3" fill="#e0f2fe"/>`);
+    if (code >= 95) return svg(`<ellipse cx="32" cy="20" rx="20" ry="12" fill="#334155"/><ellipse cx="20" cy="24" rx="12" ry="10" fill="#334155"/><ellipse cx="44" cy="24" rx="11" ry="9" fill="#334155"/><polygon points="32,34 26,48 32,46 28,58 40,42 34,44 38,34" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>`);
+    return svg(`<circle cx="32" cy="32" r="14" fill="#fbbf24"/>`);
+}
 
-// ═══════════════════════════════════════════════════════════
-// RENDERING
-// ═══════════════════════════════════════════════════════════
+// ═══ RENDERING ═══
 function renderForecast(data) {
     const d=data.daily, h=data.hourly;
     const cards=document.getElementById('forecastCards'); cards.innerHTML='';
@@ -444,10 +455,8 @@ function renderCurrentMonth(td,hd,month,year) {
     const labels=td.dates.map(formatDate);
     destroyChart('chartCurrentTemp');
     charts['chartCurrentTemp']=new Chart(document.getElementById('chartCurrentTemp'),{type:'line',data:{labels,datasets:[{label:'Max',data:td.tmax,borderColor:'#ff6b35',fill:false,tension:.3,pointRadius:3,borderWidth:2},{label:'Media',data:td.tmean,borderColor:'#fbbf24',fill:false,tension:.3,pointRadius:2,borderWidth:2},{label:'Min',data:td.tmin,borderColor:'#38bdf8',fill:false,tension:.3,pointRadius:3,borderWidth:2}]},options:chartOpts(`Temperatura — ${MONTH_NAMES[month]} ${year}`,'°C')});
-
     destroyChart('chartCurrentRain');
     charts['chartCurrentRain']=new Chart(document.getElementById('chartCurrentRain'),{type:'bar',data:{labels,datasets:[{label:'mm',data:td.rain,backgroundColor:'rgba(59,130,246,.6)',borderColor:'#3b82f6',borderWidth:1,borderRadius:4}]},options:chartOpts(`Precipitazioni — ${MONTH_NAMES[month]} ${year}`,'mm')});
-
     destroyChart('chartCurrentHum');
     charts['chartCurrentHum']=new Chart(document.getElementById('chartCurrentHum'),{type:'line',data:{labels:hd.dates.map(formatDate),datasets:[{label:'Umidità %',data:hd.values,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.2)',fill:true,tension:.3,pointRadius:2,borderWidth:2}]},options:chartOpts(`Umidità — ${MONTH_NAMES[month]} ${year}`,'%',false,0,100)});
 }
@@ -455,10 +464,8 @@ function renderCurrentMonth(td,hd,month,year) {
 function renderMonthlyProfile(md) {
     destroyChart('chartMonthlyTemp');
     charts['chartMonthlyTemp']=new Chart(document.getElementById('chartMonthlyTemp'),{type:'line',data:{labels:MONTH_SHORT,datasets:[{label:'Max',data:md.map(d=>d.tmax),borderColor:'#ff6b35',backgroundColor:'rgba(255,107,53,.15)',fill:'+1',tension:.4,pointRadius:4,borderWidth:2},{label:'Media',data:md.map(d=>d.tmean),borderColor:'#fbbf24',fill:false,tension:.4,pointRadius:4,borderWidth:2},{label:'Min',data:md.map(d=>d.tmin),borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,.15)',fill:'-1',tension:.4,pointRadius:4,borderWidth:2}]},options:chartOpts('Profilo mensile medio — Temperatura','°C')});
-
     destroyChart('chartMonthlyRain');
     charts['chartMonthlyRain']=new Chart(document.getElementById('chartMonthlyRain'),{type:'bar',data:{labels:MONTH_SHORT,datasets:[{label:'mm totali',data:md.map(d=>d.rain),backgroundColor:'rgba(59,130,246,.6)',borderColor:'#3b82f6',borderWidth:1,borderRadius:6}]},options:chartOpts('Profilo mensile medio — Precipitazioni','mm')});
-
     destroyChart('chartMonthlyHum');
     charts['chartMonthlyHum']=new Chart(document.getElementById('chartMonthlyHum'),{type:'line',data:{labels:MONTH_SHORT,datasets:[{label:'Umidità %',data:md.map(d=>d.hum),borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.2)',fill:true,tension:.4,pointRadius:5,borderWidth:2.5}]},options:chartOpts('Profilo mensile medio — Umidità','%',false,0,100)});
 }
@@ -466,13 +473,10 @@ function renderMonthlyProfile(md) {
 function renderYearlyTrend(yd) {
     if(!yd.length){document.getElementById('yearlyTrendLabel').textContent='Nessun dato';return;}
     document.getElementById('yearlyTrendLabel').textContent=`${yd.length} anni · ${yd[0].year}–${yd[yd.length-1].year}`;
-
     destroyChart('chartYearlyTemp');
     charts['chartYearlyTemp']=new Chart(document.getElementById('chartYearlyTemp'),{type:'line',data:{labels:yd.map(d=>d.year),datasets:[{label:'Max media',data:yd.map(d=>d.tmax),borderColor:'#ff6b35',tension:.3,pointRadius:2,borderWidth:1.8},{label:'Media',data:yd.map(d=>d.tmean),borderColor:'#fbbf24',tension:.3,pointRadius:2,borderWidth:2.5},{label:'Min media',data:yd.map(d=>d.tmin),borderColor:'#38bdf8',tension:.3,pointRadius:2,borderWidth:1.8}]},options:chartOpts('Andamento annuale — Temperatura','°C')});
-
     destroyChart('chartYearlyRain');
     charts['chartYearlyRain']=new Chart(document.getElementById('chartYearlyRain'),{type:'bar',data:{labels:yd.map(d=>d.year),datasets:[{label:'mm totali',data:yd.map(d=>d.rain),backgroundColor:'rgba(59,130,246,.55)',borderColor:'#3b82f6',borderWidth:1,borderRadius:2}]},options:chartOpts('Andamento annuale — Precipitazioni','mm')});
-
     destroyChart('chartYearlyHum');
     charts['chartYearlyHum']=new Chart(document.getElementById('chartYearlyHum'),{type:'line',data:{labels:yd.map(d=>d.year),datasets:[{label:'Umidità %',data:yd.map(d=>d.hum),borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.2)',fill:true,tension:.3,pointRadius:2,borderWidth:2}]},options:chartOpts('Andamento annuale — Umidità','%',false,0,100)});
 }
@@ -483,13 +487,10 @@ function renderMonthTrend(td,month) {
     if(!td.length){document.getElementById('monthTrendLabel').textContent='Nessun dato';return;}
     document.getElementById('monthTrendLabel').textContent=`${td.length} anni · ${td[0].year}–${td[td.length-1].year}`;
     const years=td.map(d=>d.year);
-
     destroyChart('chartMonthTrendTemp');
     charts['chartMonthTrendTemp']=new Chart(document.getElementById('chartMonthTrendTemp'),{type:'line',data:{labels:years,datasets:[{label:'Max media',data:td.map(d=>d.tmax),borderColor:'#ff6b35',backgroundColor:'rgba(255,107,53,.08)',fill:'+1',tension:.3,pointRadius:3,borderWidth:2},{label:'Media',data:td.map(d=>d.tmean),borderColor:'#fbbf24',fill:false,tension:.3,pointRadius:3,borderWidth:2.5},{label:'Min media',data:td.map(d=>d.tmin),borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,.08)',fill:'-1',tension:.3,pointRadius:3,borderWidth:2},{label:'Tendenza',data:linearRegression(td.map(d=>d.tmean)),borderColor:'rgba(251,191,36,.4)',borderDash:[6,4],borderWidth:1.5,pointRadius:0,fill:false}]},options:chartOpts(`${mn} — Temperatura negli anni`,'°C')});
-
     destroyChart('chartMonthTrendRain');
     charts['chartMonthTrendRain']=new Chart(document.getElementById('chartMonthTrendRain'),{type:'bar',data:{labels:years,datasets:[{label:`${mn} (mm)`,data:td.map(d=>d.rain),backgroundColor:'rgba(59,130,246,.6)',borderColor:'#3b82f6',borderWidth:1,borderRadius:4},{type:'line',label:'Tendenza',data:linearRegression(td.map(d=>d.rain)),borderColor:'rgba(96,165,250,.7)',borderDash:[6,4],borderWidth:1.8,pointRadius:0,fill:false}]},options:chartOpts(`${mn} — Precipitazioni negli anni`,'mm')});
-
     destroyChart('chartMonthTrendHum');
     charts['chartMonthTrendHum']=new Chart(document.getElementById('chartMonthTrendHum'),{type:'line',data:{labels:years,datasets:[{label:`Umidità ${mn}`,data:td.map(d=>d.hum),borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.2)',fill:true,tension:.3,pointRadius:3,borderWidth:2.5},{label:'Tendenza',data:linearRegression(td.map(d=>d.hum)),borderColor:'rgba(52,211,153,.5)',borderDash:[6,4],borderWidth:1.5,pointRadius:0,fill:false}]},options:chartOpts(`${mn} — Umidità negli anni`,'%',false,0,100)});
 }
@@ -513,9 +514,63 @@ function chartOpts(title,yLabel,hideX,yMin,yMax) {
             y:{grid:{color:'rgba(255,255,255,.05)'},title:{display:true,text:yLabel},min:yMin,max:yMax,ticks:{font:{size:10}}}}};
 }
 
-// ═══════════════════════════════════════════════════════════
-// CARICAMENTO PRINCIPALE
-// ═══════════════════════════════════════════════════════════
+// ═══ GESTIONE CACHE ═══
+async function loadHistoricalData(maxYear) {
+    let cache = null;
+    try { cache = JSON.parse(localStorage.getItem(CACHE_KEY)); } catch(e) {}
+    
+    if (!cache || !cache.daily || !cache.daily.time || !cache.hum) {
+        cache = { lastYear: START_YEAR - 1, daily: {time:[],tmax:[],tmin:[],tmean:[],rain:[]}, hum: {time:[],val:[]} };
+    }
+
+    const startFetch = Math.max(START_YEAR, cache.lastYear + 1);
+
+    if (startFetch <= maxYear) {
+        console.log(`📥 Download nuovi dati: ${startFetch} → ${maxYear}`);
+        
+        for (let y = startFetch; y <= maxYear; y += 10) {
+            const ce = Math.min(y + 9, maxYear);
+            setStatus(`📥 Download Temp/Pioggia ${y}–${ce} (solo la prima volta)...`, true);
+            try {
+                const r = await apiDaily(`${y}-01-01`, `${ce}-12-31`);
+                if (r.daily?.time) {
+                    cache.daily.time.push(...r.daily.time);
+                    cache.daily.tmax.push(...r.daily.temperature_2m_max);
+                    cache.daily.tmin.push(...r.daily.temperature_2m_min);
+                    cache.daily.tmean.push(...r.daily.temperature_2m_mean);
+                    cache.daily.rain.push(...r.daily.precipitation_sum);
+                }
+            } catch(e) { console.warn(`⚠️ Errore temp ${y}-${ce}:`, e); }
+            await sleep(1500);
+        }
+
+        for (let y = startFetch; y <= maxYear; y += 5) {
+            const ce = Math.min(y + 4, maxYear);
+            setStatus(`📥 Download Umidità ${y}–${ce} (solo la prima volta)...`, true);
+            try {
+                const r = await apiHourly(`${y}-01-01`, `${ce}-12-31`);
+                const agg = aggregateHumidityDaily(r);
+                cache.hum.time.push(...agg.dates);
+                cache.hum.val.push(...agg.values);
+            } catch(e) { console.warn(`⚠️ Errore umidità ${y}-${ce}:`, e); }
+            await sleep(1500);
+        }
+
+        cache.lastYear = maxYear;
+        
+        try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+            console.log('💾 Cache salvata! I prossimi caricamenti saranno istantanei.');
+        } catch(e) { console.warn('⚠️ Impossibile salvare la cache (spazio pieno)', e); }
+    } else {
+        console.log('⚡ Dati storici letti dalla cache locale (0 richieste API)');
+        setStatus('⚡ Dati storici letti dalla cache locale (istantaneo)...', true);
+    }
+
+    return cache;
+}
+
+// ═══ CARICAMENTO PRINCIPALE ═══
 async function loadAll() {
     const btn=document.getElementById('btnLoad'); btn.disabled=true;
     const month=parseInt(document.getElementById('selMonth').value);
@@ -524,15 +579,10 @@ async function loadAll() {
     const now=new Date(), curYear=now.getFullYear(), curMonth=now.getMonth(), curDay=now.getDate();
 
     try {
-        await sleep(2000);
-
-        // 1) PREVISIONI
-        setStatus('📡 [1/5] Previsioni 7 giorni...',true);
+        setStatus('📡 [1/4] Previsioni 7 giorni...',true);
         renderForecast(await apiForecast());
-        await sleep(API_DELAY);
 
-        // 2) MESE CORRENTE
-        setStatus(`📡 [2/5] ${MONTH_NAMES[month]} ${yearTo}...`,true);
+        setStatus(`📡 [2/4] ${MONTH_NAMES[month]} ${yearTo}...`,true);
         let curTemp,curHum;
         if(yearTo===curYear && month===curMonth){
             const data=await fetchWithRetry(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&past_days=${curDay+5}&forecast_days=1&daily=${DAILY_VARS}&hourly=relative_humidity_2m&timezone=Europe%2FRome`);
@@ -540,68 +590,35 @@ async function loadAll() {
             curHum=filterHumMonth(aggregateHumidityDaily({hourly:data.hourly}),curYear,month);
         } else {
             const s=`${yearTo}-${String(month+1).padStart(2,'0')}-01`, e=`${yearTo}-${String(month+1).padStart(2,'0')}-${String(daysInMonth(yearTo,month)).padStart(2,'0')}`;
-            const dR=await apiDaily(s,e); await sleep(API_DELAY); const hR=await apiHourly(s,e);
+            const dR=await apiDaily(s,e); const hR=await apiHourly(s,e);
             curTemp={dates:dR.daily.time,tmax:dR.daily.temperature_2m_max,tmin:dR.daily.temperature_2m_min,tmean:dR.daily.temperature_2m_mean,rain:dR.daily.precipitation_sum};
             curHum=aggregateHumidityDaily(hR);
         }
         renderCurrentMonth(curTemp,curHum,month,yearTo);
-        await sleep(API_DELAY);
 
-        // 3) TEMPERATURE STORICHE A CHUNK
         const maxYear=Math.min(yearTo,curYear-1);
-        const allT={time:[],tmax:[],tmin:[],tmean:[],rain:[]};
-        for(let y=yearFrom;y<=maxYear;y+=CHUNK_YEARS){
-            const ce=Math.min(y+CHUNK_YEARS-1,maxYear);
-            setStatus(`📡 [3/5] Temp ${y}–${ce}...`,true);
-            try{
-                const r=await apiDaily(`${y}-01-01`,`${ce}-12-31`);
-                if(r.daily?.time){allT.time.push(...r.daily.time);allT.tmax.push(...r.daily.temperature_2m_max);allT.tmin.push(...r.daily.temperature_2m_min);allT.tmean.push(...r.daily.temperature_2m_mean);allT.rain.push(...r.daily.precipitation_sum);}
-                console.log(`✅ Temp ${y}-${ce}: ${r.daily?.time?.length||0} giorni`);
-            }catch(e){console.warn(`⚠️ Temp ${y}-${ce}:`,e);}
-            await sleep(API_DELAY);
-        }
-        console.log(`📊 Totale giorni temperatura: ${allT.time.length}`);
+        setStatus('📡 [3/4] Controllo cache dati storici...',true);
+        const cache = await loadHistoricalData(maxYear);
 
-        // 4) UMIDITÀ STORICA A CHUNK
-        const allH={time:[],val:[]};
-        for(let y=yearFrom;y<=maxYear;y+=CHUNK_YEARS){
-            const ce=Math.min(y+CHUNK_YEARS-1,maxYear);
-            setStatus(`📡 [4/5] Umidità ${y}–${ce}...`,true);
-            try{
-                const r=await apiHourly(`${y}-01-01`,`${ce}-12-31`);
-                if(r.hourly?.time){allH.time.push(...r.hourly.time);allH.val.push(...r.hourly.relative_humidity_2m);}
-                console.log(`✅ Umidità ${y}-${ce}: ${r.hourly?.time?.length||0} ore`);
-            }catch(e){console.warn(`⚠️ Umidità ${y}-${ce}:`,e);}
-            await sleep(API_DELAY);
-        }
-        console.log(`📊 Totale ore umidità: ${allH.time.length}`);
-
-        // 5) AGGREGAZIONE EFFICIENTE
-        setStatus('🔧 [5/5] Elaborazione...',true);
+        setStatus('🔧 [4/4] Elaborazione grafici...',true);
 
         const ymData={};
         for(let y=yearFrom;y<=maxYear;y++) for(let m=1;m<=12;m++) ymData[`${y}-${String(m).padStart(2,'0')}`]={tmax:[],tmin:[],tmean:[],rain:[]};
 
-        for(let i=0;i<allT.time.length;i++){
-            const key=allT.time[i].substring(0,7);
+        for(let i=0;i<cache.daily.time.length;i++){
+            const key=cache.daily.time[i].substring(0,7);
             const ym=ymData[key]; if(!ym) continue;
-            if(allT.tmax[i]!=null) ym.tmax.push(allT.tmax[i]);
-            if(allT.tmin[i]!=null) ym.tmin.push(allT.tmin[i]);
-            if(allT.tmean[i]!=null) ym.tmean.push(allT.tmean[i]);
-            if(allT.rain[i]!=null) ym.rain.push(allT.rain[i]);
+            if(cache.daily.tmax[i]!=null) ym.tmax.push(cache.daily.tmax[i]);
+            if(cache.daily.tmin[i]!=null) ym.tmin.push(cache.daily.tmin[i]);
+            if(cache.daily.tmean[i]!=null) ym.tmean.push(cache.daily.tmean[i]);
+            if(cache.daily.rain[i]!=null) ym.rain.push(cache.daily.rain[i]);
         }
 
-        const humDaily={};
-        for(let i=0;i<allH.time.length;i++){
-            if(allH.val[i]==null) continue;
-            const day=allH.time[i].substring(0,10);
-            (humDaily[day]||(humDaily[day]=[])).push(allH.val[i]);
-        }
         const ymHum={};
         for(let y=yearFrom;y<=maxYear;y++) for(let m=1;m<=12;m++) ymHum[`${y}-${String(m).padStart(2,'0')}`]=[];
-        for(const day of Object.keys(humDaily).sort()){
-            const key=day.substring(0,7);
-            if(ymHum[key]) ymHum[key].push(round1(avg(humDaily[day])));
+        for(let i=0;i<cache.hum.time.length;i++){
+            const key=cache.hum.time[i].substring(0,7);
+            if(ymHum[key]) ymHum[key].push(cache.hum.val[i]);
         }
 
         const monthlyAgg=Array.from({length:12},()=>({tmax:[],tmin:[],tmean:[],rain:[],hum:[]}));
