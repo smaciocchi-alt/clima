@@ -387,7 +387,7 @@
         <div class="section-head">
             <div class="section-icon">📈</div>
             <h2>Andamento annuale completo</h2>
-            <span class="subtitle">Serie storica 1965–oggi</span>
+            <span class="subtitle">Serie storica 1965–anno precedente</span>
         </div>
         <div class="chart-grid">
             <div class="card"><h3>🌡️ Temperatura media annuale <span class="tag">°C</span></h3><canvas id="chartYearlyTemp"></canvas></div>
@@ -490,6 +490,11 @@ async function apiForecast() {
     const vars = 'temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,relative_humidity_2m_max,relative_humidity_2m_min,weathercode';
     const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&daily=${vars}&hourly=temperature_2m,precipitation_probability,relative_humidity_2m&forecast_days=7&timezone=Europe%2FRome`);
     if (!r.ok) throw new Error('Forecast error ' + r.status);
+    return r.json();
+}
+async function apiForecastPast(pastDays) {
+    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&past_days=${pastDays}&forecast_days=1&daily=${DAILY_VARS}&hourly=relative_humidity_2m&timezone=Europe%2FRome`);
+    if (!r.ok) throw new Error('Forecast past error ' + r.status);
     return r.json();
 }
 
@@ -815,10 +820,6 @@ function renderYearlyTrend(yearlyData) {
 // ═══════════════════════════════════════════════════════════
 // ANDAMENTO DEL MESE SELEZIONATO NEGLI ANNI
 // ═══════════════════════════════════════════════════════════
-/**
- * monthTrendData: array di oggetti { year, tmax, tmin, tmean, rain, hum }
- * dove ogni valore è relativo al MESE SELEZIONATO di quell'anno.
- */
 function renderMonthTrend(monthTrendData, month) {
     const monthName = MONTH_NAMES[month];
     document.getElementById('monthTrendTitle').textContent =
@@ -828,7 +829,6 @@ function renderMonthTrend(monthTrendData, month) {
 
     const years = monthTrendData.map(d => d.year);
 
-    // Temperatura
     destroyChart('chartMonthTrendTemp');
     charts['chartMonthTrendTemp'] = new Chart(document.getElementById('chartMonthTrendTemp'), {
         type: 'line',
@@ -863,7 +863,6 @@ function renderMonthTrend(monthTrendData, month) {
         options: chartOpts(`${monthName} — Temperatura media negli anni`, '°C')
     });
 
-    // Pioggia
     destroyChart('chartMonthTrendRain');
     charts['chartMonthTrendRain'] = new Chart(document.getElementById('chartMonthTrendRain'), {
         type: 'bar',
@@ -891,7 +890,6 @@ function renderMonthTrend(monthTrendData, month) {
         options: chartOpts(`${monthName} — Precipitazioni totali negli anni`, 'mm')
     });
 
-    // Umidità
     destroyChart('chartMonthTrendHum');
     charts['chartMonthTrendHum'] = new Chart(document.getElementById('chartMonthTrendHum'), {
         type: 'line',
@@ -921,7 +919,6 @@ function renderMonthTrend(monthTrendData, month) {
     });
 }
 
-/** Regressione lineare semplice → array di valori previsti */
 function linearRegression(values) {
     const n = values.length;
     if (n < 2) return values.slice();
@@ -970,6 +967,44 @@ function chartOpts(title, yLabel, hideXTicks = false, yMin, yMax) {
 }
 
 // ═══════════════════════════════════════════════════════════
+// CARICAMENTO DATI PER UN ANNO (Archive o Forecast)
+// ═══════════════════════════════════════════════════════════
+async function loadYearData(year, currentYear, currentMonth, currentDay) {
+    const prevYear = currentYear - 1;
+    
+    // Se è l'anno precedente, usa Forecast API con past_days
+    if (year === prevYear) {
+        // Calcola giorni dall'inizio dell'anno precedente a oggi
+        const startOfPrevYear = new Date(prevYear, 0, 1);
+        const today = new Date(currentYear, currentMonth, currentDay);
+        const daysDiff = Math.floor((today - startOfPrevYear) / (1000 * 60 * 60 * 24));
+        
+        try {
+            const data = await apiForecastPast(daysDiff);
+            return {
+                year: year,
+                daily: data.daily,
+                humRaw: { hourly: data.hourly }
+            };
+        } catch (err) {
+            console.warn(`Errore Forecast per anno ${year}:`, err);
+            return { year: year, daily: null, humRaw: null };
+        }
+    }
+    
+    // Altrimenti usa Archive API
+    const s = `${year}-01-01`;
+    const e = `${year}-12-31`;
+    try {
+        const [dR, hR] = await Promise.all([apiArchiveDaily(s, e), apiArchiveHourly(s, e)]);
+        return { year: year, daily: dR.daily, humRaw: hR };
+    } catch (err) {
+        console.warn(`Errore Archive per anno ${year}:`, err);
+        return { year: year, daily: null, humRaw: null };
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
 // CARICAMENTO PRINCIPALE
 // ═══════════════════════════════════════════════════════════
 async function loadAll() {
@@ -980,6 +1015,9 @@ async function loadAll() {
     const yearTo = parseInt(document.getElementById('selYearTo').value);
     const now = new Date();
     const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    const currentDay = now.getDate();
+    const prevYear = currentYear - 1;
 
     try {
         // ── 1. PREVISIONI 7 GIORNI ─────────────────────────
@@ -990,14 +1028,11 @@ async function loadAll() {
         // ── 2. MESE SELEZIONATO (anno più recente) ─────────
         setStatus(`Caricamento ${MONTH_NAMES[month]} ${yearTo}...`, true);
         let curTemp = null, curHum = null;
-        if (yearTo === currentYear && month === now.getMonth()) {
-            const pastDays = now.getDate() + 5;
-            const [dR, hR] = await Promise.all([
-                fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&past_days=${pastDays}&forecast_days=1&daily=${DAILY_VARS}&timezone=Europe%2FRome`).then(r=>r.json()),
-                fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&past_days=${pastDays}&forecast_days=1&hourly=relative_humidity_2m&timezone=Europe%2FRome`).then(r=>r.json())
-            ]);
-            curTemp = filterMonth(dR.daily, currentYear, month);
-            curHum = filterHumMonth(aggregateHumidityDaily(hR), currentYear, month);
+        if (yearTo === currentYear && month === currentMonth) {
+            const pastDays = currentDay + 5;
+            const data = await apiForecastPast(pastDays);
+            curTemp = filterMonth(data.daily, currentYear, month);
+            curHum = filterHumMonth(aggregateHumidityDaily({hourly: data.hourly}), currentYear, month);
         } else {
             const days = daysInMonth(yearTo, month);
             const s = `${yearTo}-${String(month+1).padStart(2,'0')}-01`;
@@ -1015,33 +1050,20 @@ async function loadAll() {
         renderCurrentMonth(curTemp, curHum, month, yearTo);
 
         // ── 3. DATI STORICI COMPLETI ───────────────────────
-        setStatus(`Caricamento serie storica ${yearFrom}–${yearTo}...`, true);
+        setStatus(`Caricamento serie storica ${yearFrom}–${prevYear}...`, true);
 
-        // Aggregati mensili (per i 12 mesi)
         const monthlyAgg = Array.from({length: 12}, () => ({ tmax: [], tmin: [], tmean: [], rain: [], hum: [] }));
-        // Aggregati annuali
         const yearlyAgg = {};
-        // Dati specifici del MESE SELEZIONATO per ogni anno → per il grafico trend
-        const monthTrendData = []; // { year, tmax, tmin, tmean, rain, hum }
+        const monthTrendData = [];
 
         const years = [];
-        for (let y = yearFrom; y <= yearTo; y++) years.push(y);
+        for (let y = yearFrom; y <= prevYear; y++) years.push(y);
         const yearChunks = chunk(years, 5);
 
         for (const yrChunk of yearChunks) {
             setStatus(`Elaborazione anni ${yrChunk[0]}–${yrChunk[yrChunk.length-1]}...`, true);
 
-            const promises = yrChunk.map(async (y) => {
-                const s = `${y}-01-01`;
-                const e = `${y}-12-31`;
-                try {
-                    const [dR, hR] = await Promise.all([apiArchiveDaily(s, e), apiArchiveHourly(s, e)]);
-                    return { year: y, daily: dR.daily, humRaw: hR };
-                } catch (err) {
-                    console.warn(`Errore anno ${y}:`, err);
-                    return { year: y, daily: null, humRaw: null };
-                }
-            });
+            const promises = yrChunk.map(y => loadYearData(y, currentYear, currentMonth, currentDay));
             const results = await Promise.all(promises);
 
             for (const r of results) {
@@ -1049,7 +1071,6 @@ async function loadAll() {
                 const d = r.daily;
                 yearlyAgg[r.year] = { tmax: [], tmin: [], tmean: [], rain: [], hum: [] };
 
-                // Dati del MESE SELEZIONATO per questo anno
                 const selMonthData = { year: r.year, tmaxs: [], tmins: [], tmeans: [], rains: [], hums: [] };
 
                 for (let m = 0; m < 12; m++) {
@@ -1086,7 +1107,6 @@ async function loadAll() {
                     if (rains.length) monthlyAgg[m].rain.push(rains.reduce((a,b)=>a+b,0));
                 }
 
-                // Umidità
                 const humAgg = aggregateHumidityDaily(r.humRaw);
                 for (let i = 0; i < humAgg.dates.length; i++) {
                     const m = parseInt(humAgg.dates[i].substring(5,7)) - 1;
@@ -1095,7 +1115,6 @@ async function loadAll() {
                     if (m === month) selMonthData.hums.push(humAgg.values[i]);
                 }
 
-                // Salva i dati del mese selezionato per questo anno
                 monthTrendData.push({
                     year: r.year,
                     tmax: selMonthData.tmaxs.length ? round1(avg(selMonthData.tmaxs)) : null,
@@ -1108,11 +1127,8 @@ async function loadAll() {
             await sleep(250);
         }
 
-        // Ordina per anno
         monthTrendData.sort((a, b) => a.year - b.year);
 
-        // ── RENDERING GRAFICI ──────────────────────────────
-        // Profilo mensile medio
         const monthlyProfile = monthlyAgg.map(m => ({
             tmax: m.tmax.length ? round1(avg(m.tmax)) : null,
             tmin: m.tmin.length ? round1(avg(m.tmin)) : null,
@@ -1122,7 +1138,6 @@ async function loadAll() {
         }));
         renderMonthlyProfile(monthlyProfile);
 
-        // Andamento annuale completo
         const yearlyTrend = Object.keys(yearlyAgg).sort().map(y => {
             const d = yearlyAgg[y];
             return {
@@ -1134,10 +1149,9 @@ async function loadAll() {
         });
         renderYearlyTrend(yearlyTrend);
 
-        // Andamento del mese selezionato negli anni
         renderMonthTrend(monthTrendData, month);
 
-        setStatus(`✅ Dati caricati! ${years.length} anni elaborati · Aggiornamento automatico ogni 10 min`, false);
+        setStatus(`✅ Dati caricati! ${years.length} anni elaborati (fino al ${prevYear}) · Aggiornamento automatico ogni 10 min`, false);
 
     } catch (err) {
         console.error(err);
