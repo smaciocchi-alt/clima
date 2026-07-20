@@ -48,7 +48,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ─── HEADER ──────────────────────────────────────── */
         header {
             position: sticky; top: 0; z-index: 100;
             backdrop-filter: blur(20px);
@@ -100,7 +99,6 @@
         }
         .clock { font-size: .85rem; color: var(--text-dim); font-variant-numeric: tabular-nums; }
 
-        /* ─── CONTROLS ────────────────────────────────────── */
         .controls {
             max-width: 1500px; margin: 0 auto;
             padding: 1.25rem 2rem;
@@ -132,7 +130,6 @@
         .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(249,115,22,.4); }
         .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 
-        /* ─── STATUS BAR ──────────────────────────────────── */
         #status {
             max-width: 1500px; margin: 0 auto;
             padding: .6rem 2rem;
@@ -147,7 +144,6 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ─── MAIN LAYOUT ─────────────────────────────────── */
         main { max-width: 1500px; margin: 0 auto; padding: 1rem 2rem 4rem; }
 
         .section {
@@ -186,7 +182,6 @@
             gap: 1.25rem;
         }
 
-        /* ─── CARDS ───────────────────────────────────────── */
         .card {
             background: linear-gradient(180deg, var(--bg-2) 0%, var(--bg-1) 100%);
             border: 1px solid var(--border);
@@ -216,7 +211,6 @@
         }
         .card canvas { width: 100% !important; }
 
-        /* Forecast cards special */
         .forecast-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -258,7 +252,6 @@
             font-size: .75rem; color: var(--hum-light);
         }
 
-        /* ─── INFO BOX ────────────────────────────────────── */
         .info-box {
             background: linear-gradient(135deg, rgba(59,130,246,.05), rgba(16,185,129,.03));
             border: 1px solid rgba(59,130,246,.15);
@@ -276,7 +269,6 @@
             border-radius: 4px; font-size: .82em;
         }
 
-        /* ─── RESPONSIVE ──────────────────────────────────── */
         @media (max-width: 640px) {
             .header-inner, .controls, main, #status { padding-left: 1rem; padding-right: 1rem; }
             .chart-grid { grid-template-columns: 1fr; }
@@ -285,7 +277,6 @@
             .section-head .subtitle { margin-left: 0; width: 100%; }
         }
 
-        /* ─── SCROLLBAR ───────────────────────────────────── */
         ::-webkit-scrollbar { width: 10px; height: 10px; }
         ::-webkit-scrollbar-track { background: var(--bg-0); }
         ::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 5px; }
@@ -345,7 +336,6 @@
             <strong>Fonte:</strong> Open-Meteo Archive API (ERA5/ECMWF) + Forecast API.
             <strong>Coordinate:</strong> <code>42.1328°N, 12.1056°E</code> — Canale Monterano (RM).
             L'app si aggiorna automaticamente ogni <strong>10 minuti</strong>.
-            Il caricamento storico completo può richiedere alcuni secondi.
         </div>
     </div>
 
@@ -406,17 +396,17 @@
         </div>
     </div>
 
-    <!-- ─── SEZIONE 5: CONFRONTO MULTI-ANNO ────────────── -->
+    <!-- ─── SEZIONE 5: ANDAMENTO DEL MESE NEGLI ANNI ───── -->
     <div class="section">
         <div class="section-head">
-            <div class="section-icon">🔀</div>
-            <h2>Confronto giornaliero multi-anno</h2>
-            <span class="subtitle" id="overlayLabel">Ultimi 5 anni del range</span>
+            <div class="section-icon">📉</div>
+            <h2 id="monthTrendTitle">Andamento del mese selezionato negli anni</h2>
+            <span class="subtitle" id="monthTrendLabel">—</span>
         </div>
         <div class="chart-grid">
-            <div class="card"><h3>🌡️ Temperatura media giornaliera</h3><canvas id="chartOverlayTemp"></canvas></div>
-            <div class="card"><h3>🌧️ Precipitazioni giornaliere</h3><canvas id="chartOverlayRain"></canvas></div>
-            <div class="card"><h3>💧 Umidità media giornaliera</h3><canvas id="chartOverlayHum"></canvas></div>
+            <div class="card"><h3>🌡️ Temperatura del mese <span class="tag">max / media / min per anno</span></h3><canvas id="chartMonthTrendTemp"></canvas></div>
+            <div class="card"><h3>🌧️ Pioggia del mese <span class="tag">mm totali per anno</span></h3><canvas id="chartMonthTrendRain"></canvas></div>
+            <div class="card"><h3>💧 Umidità del mese <span class="tag">media % per anno</span></h3><canvas id="chartMonthTrendHum"></canvas></div>
         </div>
     </div>
 </main>
@@ -431,7 +421,7 @@ const MONTH_NAMES = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
                      'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 const MONTH_SHORT = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 const DAY_NAMES = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
-const AUTO_REFRESH_MS = 10 * 60 * 1000; // 10 minuti
+const AUTO_REFRESH_MS = 10 * 60 * 1000;
 
 Chart.defaults.color = '#8b93a7';
 Chart.defaults.borderColor = 'rgba(255,255,255,.06)';
@@ -440,7 +430,7 @@ Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
 const charts = {};
 
 // ═══════════════════════════════════════════════════════════
-// INIT CONTROLS + CLOCK
+// INIT
 // ═══════════════════════════════════════════════════════════
 (function init() {
     const now = new Date();
@@ -479,9 +469,10 @@ function chunk(arr, size) {
     for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
     return out;
 }
+function avg(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null; }
 
 // ═══════════════════════════════════════════════════════════
-// API CALLS
+// API
 // ═══════════════════════════════════════════════════════════
 const DAILY_VARS = 'temperature_2m_max,temperature_2m_min,temperature_2m_mean,precipitation_sum';
 
@@ -503,7 +494,7 @@ async function apiForecast() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// AGGREGAZIONE UMIDITÀ ORARIA → GIORNALIERA
+// AGGREGAZIONE UMIDITÀ
 // ═══════════════════════════════════════════════════════════
 function aggregateHumidityDaily(hourlyData) {
     if (!hourlyData?.hourly?.time) return { dates: [], values: [] };
@@ -518,7 +509,7 @@ function aggregateHumidityDaily(hourlyData) {
     for (const d of Object.keys(daily).sort()) {
         const a = daily[d];
         dates.push(d);
-        values.push(round1(a.reduce((x,y)=>x+y,0) / a.length));
+        values.push(round1(avg(a)));
     }
     return { dates, values };
 }
@@ -568,7 +559,6 @@ function renderForecast(data) {
             </div>`;
     }
 
-    // Grafico temperature (orarie)
     destroyChart('chartFcTemp');
     charts['chartFcTemp'] = new Chart(document.getElementById('chartFcTemp'), {
         type: 'line',
@@ -589,7 +579,6 @@ function renderForecast(data) {
         options: chartOpts('Temperatura oraria — 7 giorni', '°C', true)
     });
 
-    // Grafico pioggia (probabilità oraria)
     destroyChart('chartFcRain');
     charts['chartFcRain'] = new Chart(document.getElementById('chartFcRain'), {
         type: 'bar',
@@ -627,7 +616,6 @@ function renderForecast(data) {
         }
     });
 
-    // Grafico umidità (oraria)
     destroyChart('chartFcHum');
     charts['chartFcHum'] = new Chart(document.getElementById('chartFcHum'), {
         type: 'line',
@@ -650,7 +638,7 @@ function renderForecast(data) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// ANDAMENTO GIORNALIERO (MESE SELEZIONATO, ANNO PIÙ RECENTE)
+// ANDAMENTO GIORNALIERO (MESE SELEZIONATO, ANNO RECENTE)
 // ═══════════════════════════════════════════════════════════
 function renderCurrentMonth(tempData, humData, month, year) {
     document.getElementById('currentMonthLabel').textContent =
@@ -715,7 +703,6 @@ function renderCurrentMonth(tempData, humData, month, year) {
 // PROFILO MENSILE MEDIO (12 MESI)
 // ═══════════════════════════════════════════════════════════
 function renderMonthlyProfile(monthlyData) {
-    // monthlyData: array di 12 oggetti { tmean, tmax, tmin, rain, hum }
     const labels = MONTH_SHORT;
 
     destroyChart('chartMonthlyTemp');
@@ -776,7 +763,6 @@ function renderMonthlyProfile(monthlyData) {
 // ANDAMENTO ANNUALE COMPLETO
 // ═══════════════════════════════════════════════════════════
 function renderYearlyTrend(yearlyData) {
-    // yearlyData: array { year, tmean, tmax, tmin, rain, hum }
     destroyChart('chartYearlyTemp');
     charts['chartYearlyTemp'] = new Chart(document.getElementById('chartYearlyTemp'), {
         type: 'line',
@@ -827,57 +813,129 @@ function renderYearlyTrend(yearlyData) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// OVERLAY MULTI-ANNO
+// ANDAMENTO DEL MESE SELEZIONATO NEGLI ANNI
 // ═══════════════════════════════════════════════════════════
-function renderOverlay(overlayData, month) {
-    const years = Object.keys(overlayData).sort();
-    document.getElementById('overlayLabel').textContent =
-        `Anni: ${years.join(', ')}`;
-    const colors = ['#f97316','#3b82f6','#10b981','#a855f7','#f43f5e','#eab308'];
-    const maxDays = daysInMonth(parseInt(years[years.length-1]) || 2025, month);
-    const labels = Array.from({length: maxDays}, (_, i) => (i+1).toString());
+/**
+ * monthTrendData: array di oggetti { year, tmax, tmin, tmean, rain, hum }
+ * dove ogni valore è relativo al MESE SELEZIONATO di quell'anno.
+ */
+function renderMonthTrend(monthTrendData, month) {
+    const monthName = MONTH_NAMES[month];
+    document.getElementById('monthTrendTitle').textContent =
+        `Andamento di ${monthName} negli anni`;
+    document.getElementById('monthTrendLabel').textContent =
+        `${monthTrendData.length} anni · dal ${monthTrendData[0]?.year} al ${monthTrendData[monthTrendData.length-1]?.year}`;
 
-    destroyChart('chartOverlayTemp');
-    charts['chartOverlayTemp'] = new Chart(document.getElementById('chartOverlayTemp'), {
+    const years = monthTrendData.map(d => d.year);
+
+    // Temperatura
+    destroyChart('chartMonthTrendTemp');
+    charts['chartMonthTrendTemp'] = new Chart(document.getElementById('chartMonthTrendTemp'), {
         type: 'line',
         data: {
-            labels,
-            datasets: years.map((y, i) => ({
-                label: y, data: overlayData[y].tmean,
-                borderColor: colors[i % colors.length],
-                tension: .3, pointRadius: 1, borderWidth: 1.8, fill: false
-            }))
+            labels: years,
+            datasets: [
+                {
+                    label: 'Max media', data: monthTrendData.map(d => d.tmax),
+                    borderColor: '#ff6b35', backgroundColor: 'rgba(255,107,53,.08)',
+                    fill: '+1', tension: .3, pointRadius: 3, pointHoverRadius: 6,
+                    pointBackgroundColor: '#ff6b35', borderWidth: 2
+                },
+                {
+                    label: 'Media', data: monthTrendData.map(d => d.tmean),
+                    borderColor: '#fbbf24', fill: false, tension: .3,
+                    pointRadius: 3, pointHoverRadius: 6,
+                    pointBackgroundColor: '#fbbf24', borderWidth: 2.5
+                },
+                {
+                    label: 'Min media', data: monthTrendData.map(d => d.tmin),
+                    borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,.08)',
+                    fill: '-1', tension: .3, pointRadius: 3, pointHoverRadius: 6,
+                    pointBackgroundColor: '#38bdf8', borderWidth: 2
+                },
+                {
+                    label: 'Tendenza', data: linearRegression(monthTrendData.map(d => d.tmean)),
+                    borderColor: 'rgba(251,191,36,.4)', borderDash: [6, 4],
+                    borderWidth: 1.5, pointRadius: 0, fill: false
+                }
+            ]
         },
-        options: chartOpts(`Confronto giornaliero — ${MONTH_NAMES[month]}`, '°C')
+        options: chartOpts(`${monthName} — Temperatura media negli anni`, '°C')
     });
 
-    destroyChart('chartOverlayRain');
-    charts['chartOverlayRain'] = new Chart(document.getElementById('chartOverlayRain'), {
-        type: 'line',
+    // Pioggia
+    destroyChart('chartMonthTrendRain');
+    charts['chartMonthTrendRain'] = new Chart(document.getElementById('chartMonthTrendRain'), {
+        type: 'bar',
         data: {
-            labels,
-            datasets: years.map((y, i) => ({
-                label: y, data: overlayData[y].rain,
-                borderColor: colors[i % colors.length],
-                tension: .2, pointRadius: 1, borderWidth: 1.8, fill: false
-            }))
+            labels: years,
+            datasets: [
+                {
+                    label: `${monthName} (mm)`, data: monthTrendData.map(d => d.rain),
+                    backgroundColor: (ctx) => {
+                        const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
+                        g.addColorStop(0, 'rgba(59,130,246,.85)');
+                        g.addColorStop(1, 'rgba(59,130,246,.25)');
+                        return g;
+                    },
+                    borderColor: '#3b82f6', borderWidth: 1, borderRadius: 4
+                },
+                {
+                    type: 'line', label: 'Tendenza',
+                    data: linearRegression(monthTrendData.map(d => d.rain)),
+                    borderColor: 'rgba(96,165,250,.7)', borderDash: [6, 4],
+                    borderWidth: 1.8, pointRadius: 0, fill: false
+                }
+            ]
         },
-        options: chartOpts(`Confronto giornaliero — ${MONTH_NAMES[month]}`, 'mm')
+        options: chartOpts(`${monthName} — Precipitazioni totali negli anni`, 'mm')
     });
 
-    destroyChart('chartOverlayHum');
-    charts['chartOverlayHum'] = new Chart(document.getElementById('chartOverlayHum'), {
+    // Umidità
+    destroyChart('chartMonthTrendHum');
+    charts['chartMonthTrendHum'] = new Chart(document.getElementById('chartMonthTrendHum'), {
         type: 'line',
         data: {
-            labels,
-            datasets: years.map((y, i) => ({
-                label: y, data: overlayData[y].hum,
-                borderColor: colors[i % colors.length],
-                tension: .3, pointRadius: 1, borderWidth: 1.8, fill: false
-            }))
+            labels: years,
+            datasets: [
+                {
+                    label: `Umidità media ${monthName}`, data: monthTrendData.map(d => d.hum),
+                    borderColor: '#10b981',
+                    backgroundColor: (ctx) => {
+                        const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
+                        g.addColorStop(0, 'rgba(16,185,129,.35)');
+                        g.addColorStop(1, 'rgba(16,185,129,0)');
+                        return g;
+                    },
+                    fill: true, tension: .3, pointRadius: 3, pointHoverRadius: 6,
+                    pointBackgroundColor: '#10b981', borderWidth: 2.5
+                },
+                {
+                    label: 'Tendenza', data: linearRegression(monthTrendData.map(d => d.hum)),
+                    borderColor: 'rgba(52,211,153,.5)', borderDash: [6, 4],
+                    borderWidth: 1.5, pointRadius: 0, fill: false
+                }
+            ]
         },
-        options: chartOpts(`Confronto giornaliero — ${MONTH_NAMES[month]}`, '%', false, 0, 100)
+        options: chartOpts(`${monthName} — Umidità media negli anni`, '%', false, 0, 100)
     });
+}
+
+/** Regressione lineare semplice → array di valori previsti */
+function linearRegression(values) {
+    const n = values.length;
+    if (n < 2) return values.slice();
+    const xs = values.map((_, i) => i);
+    const validPairs = values.map((v, i) => v != null ? [i, v] : null).filter(Boolean);
+    if (validPairs.length < 2) return values.slice();
+    const sumX = validPairs.reduce((a, p) => a + p[0], 0);
+    const sumY = validPairs.reduce((a, p) => a + p[1], 0);
+    const sumXY = validPairs.reduce((a, p) => a + p[0]*p[1], 0);
+    const sumX2 = validPairs.reduce((a, p) => a + p[0]*p[0], 0);
+    const m = (validPairs.length * sumXY - sumX * sumY) /
+              (validPairs.length * sumX2 - sumX * sumX);
+    const q = (sumY - m * sumX) / validPairs.length;
+    return xs.map(x => round1(m * x + q));
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -959,10 +1017,12 @@ async function loadAll() {
         // ── 3. DATI STORICI COMPLETI ───────────────────────
         setStatus(`Caricamento serie storica ${yearFrom}–${yearTo}...`, true);
 
-        // Struttura dati aggregati
+        // Aggregati mensili (per i 12 mesi)
         const monthlyAgg = Array.from({length: 12}, () => ({ tmax: [], tmin: [], tmean: [], rain: [], hum: [] }));
-        const yearlyAgg = {}; // year -> { tmax:[], tmin:[], tmean:[], rain:[], hum:[] }
-        const overlayData = {};
+        // Aggregati annuali
+        const yearlyAgg = {};
+        // Dati specifici del MESE SELEZIONATO per ogni anno → per il grafico trend
+        const monthTrendData = []; // { year, tmax, tmin, tmean, rain, hum }
 
         const years = [];
         for (let y = yearFrom; y <= yearTo; y++) years.push(y);
@@ -989,40 +1049,39 @@ async function loadAll() {
                 const d = r.daily;
                 yearlyAgg[r.year] = { tmax: [], tmin: [], tmean: [], rain: [], hum: [] };
 
-                // Aggregazione mensile e annuale
+                // Dati del MESE SELEZIONATO per questo anno
+                const selMonthData = { year: r.year, tmaxs: [], tmins: [], tmeans: [], rains: [], hums: [] };
+
                 for (let m = 0; m < 12; m++) {
                     const prefix = `${r.year}-${String(m+1).padStart(2,'0')}`;
                     const tmaxs = [], tmins = [], tmeans = [], rains = [];
                     for (let i = 0; i < d.time.length; i++) {
                         if (!d.time[i].startsWith(prefix)) continue;
-                        const dayIdx = parseInt(d.time[i].substring(8,10)) - 1;
                         if (d.temperature_2m_max[i] != null) {
                             tmaxs.push(d.temperature_2m_max[i]);
                             yearlyAgg[r.year].tmax.push(d.temperature_2m_max[i]);
+                            if (m === month) selMonthData.tmaxs.push(d.temperature_2m_max[i]);
                         }
                         if (d.temperature_2m_min[i] != null) {
                             tmins.push(d.temperature_2m_min[i]);
                             yearlyAgg[r.year].tmin.push(d.temperature_2m_min[i]);
+                            if (m === month) selMonthData.tmins.push(d.temperature_2m_min[i]);
                         }
                         if (d.temperature_2m_mean[i] != null) {
                             tmeans.push(d.temperature_2m_mean[i]);
                             yearlyAgg[r.year].tmean.push(d.temperature_2m_mean[i]);
+                            if (m === month) selMonthData.tmeans.push(d.temperature_2m_mean[i]);
                         }
                         if (d.precipitation_sum[i] != null) {
                             rains.push(d.precipitation_sum[i]);
                             yearlyAgg[r.year].rain.push(d.precipitation_sum[i]);
-                        }
-                        // Overlay per il mese selezionato (ultimi 5 anni)
-                        if (m === month && r.year >= yearTo - 4) {
-                            if (!overlayData[r.year]) overlayData[r.year] = { tmean: [], rain: [], hum: [] };
-                            overlayData[r.year].tmean[dayIdx] = d.temperature_2m_mean[i];
-                            overlayData[r.year].rain[dayIdx] = d.precipitation_sum[i];
+                            if (m === month) selMonthData.rains.push(d.precipitation_sum[i]);
                         }
                     }
                     if (tmeans.length) {
-                        monthlyAgg[m].tmax.push(tmaxs.reduce((a,b)=>a+b,0)/tmaxs.length);
-                        monthlyAgg[m].tmin.push(tmins.reduce((a,b)=>a+b,0)/tmins.length);
-                        monthlyAgg[m].tmean.push(tmeans.reduce((a,b)=>a+b,0)/tmeans.length);
+                        monthlyAgg[m].tmax.push(avg(tmaxs));
+                        monthlyAgg[m].tmin.push(avg(tmins));
+                        monthlyAgg[m].tmean.push(avg(tmeans));
                     }
                     if (rains.length) monthlyAgg[m].rain.push(rains.reduce((a,b)=>a+b,0));
                 }
@@ -1033,42 +1092,50 @@ async function loadAll() {
                     const m = parseInt(humAgg.dates[i].substring(5,7)) - 1;
                     monthlyAgg[m].hum.push(humAgg.values[i]);
                     yearlyAgg[r.year].hum.push(humAgg.values[i]);
-                    // Overlay umidità
-                    if (m === month && r.year >= yearTo - 4) {
-                        const dayIdx = parseInt(humAgg.dates[i].substring(8,10)) - 1;
-                        if (!overlayData[r.year]) overlayData[r.year] = { tmean: [], rain: [], hum: [] };
-                        overlayData[r.year].hum[dayIdx] = humAgg.values[i];
-                    }
+                    if (m === month) selMonthData.hums.push(humAgg.values[i]);
                 }
+
+                // Salva i dati del mese selezionato per questo anno
+                monthTrendData.push({
+                    year: r.year,
+                    tmax: selMonthData.tmaxs.length ? round1(avg(selMonthData.tmaxs)) : null,
+                    tmin: selMonthData.tmins.length ? round1(avg(selMonthData.tmins)) : null,
+                    tmean: selMonthData.tmeans.length ? round1(avg(selMonthData.tmeans)) : null,
+                    rain: selMonthData.rains.length ? round1(selMonthData.rains.reduce((a,b)=>a+b,0)) : null,
+                    hum: selMonthData.hums.length ? round1(avg(selMonthData.hums)) : null,
+                });
             }
             await sleep(250);
         }
 
-        // Calcola medie mensili
+        // Ordina per anno
+        monthTrendData.sort((a, b) => a.year - b.year);
+
+        // ── RENDERING GRAFICI ──────────────────────────────
+        // Profilo mensile medio
         const monthlyProfile = monthlyAgg.map(m => ({
-            tmax: m.tmax.length ? round1(m.tmax.reduce((a,b)=>a+b,0)/m.tmax.length) : null,
-            tmin: m.tmin.length ? round1(m.tmin.reduce((a,b)=>a+b,0)/m.tmin.length) : null,
-            tmean: m.tmean.length ? round1(m.tmean.reduce((a,b)=>a+b,0)/m.tmean.length) : null,
-            rain: m.rain.length ? round1(m.rain.reduce((a,b)=>a+b,0)/m.rain.length) : null,
-            hum: m.hum.length ? round1(m.hum.reduce((a,b)=>a+b,0)/m.hum.length) : null,
+            tmax: m.tmax.length ? round1(avg(m.tmax)) : null,
+            tmin: m.tmin.length ? round1(avg(m.tmin)) : null,
+            tmean: m.tmean.length ? round1(avg(m.tmean)) : null,
+            rain: m.rain.length ? round1(avg(m.rain)) : null,
+            hum: m.hum.length ? round1(avg(m.hum)) : null,
         }));
         renderMonthlyProfile(monthlyProfile);
 
-        // Calcola medie annuali
+        // Andamento annuale completo
         const yearlyTrend = Object.keys(yearlyAgg).sort().map(y => {
             const d = yearlyAgg[y];
-            const avg = arr => arr.length ? round1(arr.reduce((a,b)=>a+b,0)/arr.length) : null;
             return {
                 year: parseInt(y),
-                tmax: avg(d.tmax), tmin: avg(d.tmin), tmean: avg(d.tmean),
+                tmax: round1(avg(d.tmax)), tmin: round1(avg(d.tmin)), tmean: round1(avg(d.tmean)),
                 rain: d.rain.length ? round1(d.rain.reduce((a,b)=>a+b,0)) : null,
-                hum: avg(d.hum)
+                hum: round1(avg(d.hum))
             };
         });
         renderYearlyTrend(yearlyTrend);
 
-        // Overlay
-        renderOverlay(overlayData, month);
+        // Andamento del mese selezionato negli anni
+        renderMonthTrend(monthTrendData, month);
 
         setStatus(`✅ Dati caricati! ${years.length} anni elaborati · Aggiornamento automatico ogni 10 min`, false);
 
